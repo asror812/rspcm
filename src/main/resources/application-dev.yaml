@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://161.35.72.98:5432/postgres}
+    #url: ${DB_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${DB_USERNAME:user}
+    password: ${DB_PASSWORD:password}
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: true
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:asror0812@gmail.com}
+    password: ${MAIL_PASSWORD:mknb upzz zcxw fnzw}
+
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
