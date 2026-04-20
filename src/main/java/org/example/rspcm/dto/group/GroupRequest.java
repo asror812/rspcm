@@ -10,6 +10,7 @@ public record GroupRequest(
         @NotBlank String name,
         String description,
         @NotNull GroupLanguage language,
+        Set<Long> subjectIds,
         Set<Long> teacherIds,
         Set<Long> studentIds
 ) {

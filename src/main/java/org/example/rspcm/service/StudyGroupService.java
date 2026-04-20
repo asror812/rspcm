@@ -1,12 +1,15 @@
 package org.example.rspcm.service;
 
 import org.example.rspcm.dto.group.GroupRequest;
-import org.example.rspcm.exception.BadRequestException;
+import org.example.rspcm.exception.ErrorCodes;
+import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.Subject;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.StudyGroup;
 import org.example.rspcm.repository.AppUserRepository;
 import org.example.rspcm.repository.StudentProfileRepository;
+import org.example.rspcm.repository.SubjectRepository;
 import org.example.rspcm.repository.StudyGroupRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -32,6 +35,7 @@ public class StudyGroupService {
     private final StudyGroupRepository groupRepository;
     private final AppUserRepository userRepository;
     private final StudentProfileRepository studentProfileRepository;
+    private final SubjectRepository subjectRepository;
 
     public List<StudyGroup> findAll() {
         return groupRepository.findAll();
@@ -47,6 +51,7 @@ public class StudyGroupService {
                 .name(request.name())
                 .description(request.description())
                 .language(request.language())
+                .subjects(resolveSubjects(request.subjectIds()))
                 .teachers(resolveUsers(request.teacherIds()))
                 .students(resolveUsers(request.studentIds()))
                 .build();
@@ -59,6 +64,7 @@ public class StudyGroupService {
         group.setName(request.name());
         group.setDescription(request.description());
         group.setLanguage(request.language());
+        group.setSubjects(resolveSubjects(request.subjectIds()));
         group.setTeachers(resolveUsers(request.teacherIds()));
         group.setStudents(resolveUsers(request.studentIds()));
         return groupRepository.save(group);
@@ -75,7 +81,7 @@ public class StudyGroupService {
         StudyGroup group = findById(groupId);
         int imported = 0;
         int skipped = 0;
-        Set<AppUser> students = new HashSet<>(group.getStudents());
+        Set<User> students = new HashSet<>(group.getStudents());
         DataFormatter formatter = new DataFormatter();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream())) {
@@ -89,7 +95,7 @@ public class StudyGroupService {
                 if (value.isBlank() || "email".equalsIgnoreCase(value) || "student_number".equalsIgnoreCase(value)) {
                     continue;
                 }
-                AppUser user = resolveStudentFromCell(value);
+                User user = resolveStudentFromCell(value);
                 if (user == null) {
                     skipped++;
                     continue;
@@ -99,7 +105,7 @@ public class StudyGroupService {
                 }
             }
         } catch (IOException e) {
-            throw new BadRequestException("Excel faylni o'qishda xatolik: " + e.getMessage());
+            throw new ErrorMessageException("Excel faylni o'qishda xatolik: " + e.getMessage(), ErrorCodes.InvalidParams);
         }
 
         group.setStudents(students);
@@ -107,14 +113,21 @@ public class StudyGroupService {
         return Map.of("imported", imported, "skipped", skipped);
     }
 
-    private Set<AppUser> resolveUsers(Set<Long> ids) {
+    private Set<User> resolveUsers(Set<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return new HashSet<>();
         }
         return new HashSet<>(userRepository.findAllById(ids));
     }
 
-    private AppUser resolveStudentFromCell(String value) {
+    private Set<Subject> resolveSubjects(Set<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(subjectRepository.findAllById(ids));
+    }
+
+    private User resolveStudentFromCell(String value) {
         if (value.contains("@")) {
             return userRepository.findByEmail(value).orElse(null);
         }

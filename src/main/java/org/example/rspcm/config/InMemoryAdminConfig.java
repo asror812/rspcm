@@ -12,9 +12,11 @@ public class InMemoryAdminConfig {
     @Bean
     public InMemoryUserDetailsManager inMemoryUserDetailsManager(AppProperties appProperties) {
         AppProperties.Admin admin = appProperties.getAdmin();
+
         if (!admin.isEnabled() || isBlank(admin.getUsername()) || isBlank(admin.getPassword())) {
             return new InMemoryUserDetailsManager();
         }
+
         return new InMemoryUserDetailsManager(
                 User.withUsername(admin.getUsername())
                         .password(new BCryptPasswordEncoder().encode(admin.getPassword()))

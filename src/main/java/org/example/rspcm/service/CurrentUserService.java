@@ -1,7 +1,7 @@
 package org.example.rspcm.service;
 
 import org.example.rspcm.exception.NotFoundException;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -14,7 +14,7 @@ public class CurrentUserService {
 
     private final AppUserRepository userRepository;
 
-    public AppUser getCurrentUser() {
+    public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         return userRepository.findByEmail(email)

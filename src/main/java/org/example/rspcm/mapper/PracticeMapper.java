@@ -1,9 +1,10 @@
 package org.example.rspcm.mapper;
 
+import org.example.rspcm.dto.common.GroupSummary;
+import org.example.rspcm.dto.common.SubjectSummary;
+import org.example.rspcm.dto.common.UserSummary;
 import org.example.rspcm.dto.practice.PracticeResponse;
-import org.example.rspcm.model.entity.AppUser;
 import org.example.rspcm.model.entity.Practice;
-import org.example.rspcm.model.entity.StudyGroup;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,8 +14,10 @@ public final class PracticeMapper {
     }
 
     public static PracticeResponse toResponse(Practice practice) {
-        Set<Long> groupIds = practice.getGroups().stream().map(StudyGroup::getId).collect(Collectors.toSet());
-        Set<Long> studentIds = practice.getTargetStudents().stream().map(AppUser::getId).collect(Collectors.toSet());
+        Set<GroupSummary> groups = practice.getGroups().stream().map(SummaryMapper::toGroupSummary).collect(Collectors.toSet());
+        Set<UserSummary> students = practice.getTargetStudents().stream().map(SummaryMapper::toUserSummary).collect(Collectors.toSet());
+        UserSummary createdBy = SummaryMapper.toUserSummary(practice.getCreatedBy());
+        SubjectSummary subject = practice.getSubject() == null ? null : SummaryMapper.toSubjectSummary(practice.getSubject());
         return new PracticeResponse(
                 practice.getId(),
                 practice.getName(),
@@ -25,10 +28,10 @@ public final class PracticeMapper {
                 practice.getWorkMode(),
                 practice.getTeamSize(),
                 practice.isCalendarRequired(),
-                groupIds,
-                studentIds,
-                practice.getCreatedBy().getId(),
-                practice.getSubject() == null ? null : practice.getSubject().getId()
+                groups,
+                students,
+                createdBy,
+                subject
         );
     }
 }

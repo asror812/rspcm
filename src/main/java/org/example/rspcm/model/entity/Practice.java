@@ -75,11 +75,11 @@ public class Practice {
             joinColumns = @JoinColumn(name = "practice_id"),
             inverseJoinColumns = @JoinColumn(name = "student_id")
     )
-    private Set<AppUser> targetStudents = new HashSet<>();
+    private Set<User> targetStudents = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by")
-    private AppUser createdBy;
+    private User createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id")

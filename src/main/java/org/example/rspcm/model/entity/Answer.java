@@ -36,7 +36,7 @@ public class Answer {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id")
-    private AppUser student;
+    private User student;
 
     @Column(length = 4000)
     private String answerText;

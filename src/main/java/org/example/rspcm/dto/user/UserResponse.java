@@ -4,7 +4,8 @@ import java.util.Set;
 
 public record UserResponse(
         Long id,
-        String fullName,
+        String firstName,
+        String lastName,
         String email,
         boolean enabled,
         Set<String> roles

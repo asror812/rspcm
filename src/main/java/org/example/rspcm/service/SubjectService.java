@@ -2,7 +2,7 @@ package org.example.rspcm.service;
 
 import org.example.rspcm.dto.subject.SubjectRequest;
 import org.example.rspcm.exception.NotFoundException;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.Subject;
 import org.example.rspcm.repository.AppUserRepository;
 import org.example.rspcm.repository.SubjectRepository;
@@ -34,7 +34,6 @@ public class SubjectService {
         Subject subject = Subject.builder()
                 .name(request.name())
                 .description(request.description())
-                .students(resolveUsers(request.studentIds()))
                 .teachers(resolveUsers(request.teacherIds()))
                 .build();
         return subjectRepository.save(subject);
@@ -45,7 +44,6 @@ public class SubjectService {
         Subject subject = findById(id);
         subject.setName(request.name());
         subject.setDescription(request.description());
-        subject.setStudents(resolveUsers(request.studentIds()));
         subject.setTeachers(resolveUsers(request.teacherIds()));
         return subjectRepository.save(subject);
     }
@@ -55,7 +53,7 @@ public class SubjectService {
         subjectRepository.delete(findById(id));
     }
 
-    private Set<AppUser> resolveUsers(Set<Long> ids) {
+    private Set<User> resolveUsers(Set<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return new HashSet<>();
         }

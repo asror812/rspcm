@@ -47,5 +47,5 @@ public class PracticeTeam {
             joinColumns = @JoinColumn(name = "team_id"),
             inverseJoinColumns = @JoinColumn(name = "student_id")
     )
-    private Set<AppUser> members = new HashSet<>();
+    private Set<User> members = new HashSet<>();
 }

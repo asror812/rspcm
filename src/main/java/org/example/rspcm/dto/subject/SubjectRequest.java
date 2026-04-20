@@ -7,7 +7,6 @@ import java.util.Set;
 public record SubjectRequest(
         @NotBlank String name,
         String description,
-        Set<Long> studentIds,
         Set<Long> teacherIds
 ) {
 }

@@ -2,10 +2,11 @@ package org.example.rspcm.service;
 
 import org.example.rspcm.dto.answer.AnswerRequest;
 import org.example.rspcm.dto.answer.AnswerScoreRequest;
-import org.example.rspcm.exception.BadRequestException;
+import org.example.rspcm.exception.ErrorCodes;
+import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.Answer;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.repository.AnswerRepository;
 import org.example.rspcm.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class AnswerService {
 
     @Transactional
     public Answer create(AnswerRequest request) {
-        AppUser student = currentUserService.getCurrentUser();
+        User student = currentUserService.getCurrentUser();
         Answer answer = Answer.builder()
                 .question(questionRepository.findById(request.questionId())
                         .orElseThrow(() -> new NotFoundException("Question topilmadi: " + request.questionId())))
@@ -54,9 +55,9 @@ public class AnswerService {
     @Transactional
     public Answer updateMine(Long id, AnswerRequest request) {
         Answer answer = findById(id);
-        AppUser current = currentUserService.getCurrentUser();
+        User current = currentUserService.getCurrentUser();
         if (!answer.getStudent().getId().equals(current.getId())) {
-            throw new BadRequestException("Faqat o'zingizning javobingizni o'zgartira olasiz");
+            throw new ErrorMessageException("Faqat o'zingizning javobingizni o'zgartira olasiz", ErrorCodes.BadRequest);
         }
         answer.setQuestion(questionRepository.findById(request.questionId())
                 .orElseThrow(() -> new NotFoundException("Question topilmadi: " + request.questionId())));
@@ -79,9 +80,9 @@ public class AnswerService {
     @Transactional
     public void deleteMine(Long id) {
         Answer answer = findById(id);
-        AppUser current = currentUserService.getCurrentUser();
+        User current = currentUserService.getCurrentUser();
         if (!answer.getStudent().getId().equals(current.getId())) {
-            throw new BadRequestException("Faqat o'zingizning javobingizni o'chira olasiz");
+            throw new ErrorMessageException("Faqat o'zingizning javobingizni o'chira olasiz", ErrorCodes.BadRequest);
         }
         answerRepository.delete(answer);
     }

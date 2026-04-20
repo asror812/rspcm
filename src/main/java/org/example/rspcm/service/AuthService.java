@@ -5,9 +5,10 @@ import org.example.rspcm.dto.auth.AuthResponse;
 import org.example.rspcm.dto.auth.LoginRequest;
 import org.example.rspcm.dto.auth.RegisterRequest;
 import org.example.rspcm.dto.auth.VerifyOtpRequest;
-import org.example.rspcm.exception.BadRequestException;
+import org.example.rspcm.exception.ErrorCodes;
+import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.OtpVerification;
 import org.example.rspcm.repository.AppUserRepository;
 import org.example.rspcm.repository.OtpVerificationRepository;
@@ -43,18 +44,19 @@ public class AuthService {
     @Transactional
     public String register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new BadRequestException("Email allaqachon mavjud");
+            throw new ErrorMessageException("Email allaqachon mavjud", ErrorCodes.AlreadyExists);
         }
 
-        AppUser user = AppUser.builder()
-                .fullName(request.fullName())
+        User user = User.builder()
+                .firstName(request.firstName())
+                .lastName(request.lastName())
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .enabled(false)
                 .roles(roleService.resolveRoles(request.roles()))
                 .build();
 
-        AppUser saved = userRepository.save(user);
+        User saved = userRepository.save(user);
         userProfileSyncService.sync(saved);
         sendOtp(request.email());
         return "Ro'yxatdan o'tish yakunlandi. OTP emailingizga yuborildi.";
@@ -62,11 +64,12 @@ public class AuthService {
 
     @Transactional
     public String resendOtp(String email) {
-        AppUser user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("Foydalanuvchi topilmadi"));
         if (user.isEnabled()) {
-            throw new BadRequestException("Bu akkaunt allaqachon tasdiqlangan");
+            throw new ErrorMessageException("Bu akkaunt allaqachon tasdiqlangan", ErrorCodes.AlreadyExists);
         }
+
         sendOtp(email);
         return "Yangi OTP yuborildi.";
     }
@@ -74,11 +77,13 @@ public class AuthService {
     @Transactional
     public String verifyOtp(VerifyOtpRequest request) {
         OtpVerification otp = otpRepository.findFirstByEmailAndCodeAndUsedFalseOrderByIdDesc(request.email(), request.code())
-                .orElseThrow(() -> new BadRequestException("OTP noto'g'ri"));
+                .orElseThrow(() -> new ErrorMessageException("OTP noto'g'ri", ErrorCodes.InvalidParams));
+
         if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("OTP muddati tugagan");
+            throw new ErrorMessageException("OTP muddati tugagan", ErrorCodes.InvalidParams);
         }
-        AppUser user = userRepository.findByEmail(request.email())
+
+        User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new NotFoundException("Foydalanuvchi topilmadi"));
         user.setEnabled(true);
         otp.setUsed(true);
@@ -95,11 +100,12 @@ public class AuthService {
         return userRepository.findByEmail(request.email())
                 .map(user -> {
                     if (!user.isEnabled()) {
-                        throw new BadRequestException("Akkaunt tasdiqlanmagan, OTP kiriting");
+                        throw new ErrorMessageException("Akkaunt tasdiqlanmagan, OTP kiriting",  ErrorCodes.InvalidParams);
                     }
+
                     String token = jwtService.generateToken(user);
                     Set<String> roles = user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toSet());
-                    return new AuthResponse(user.getId(), user.getFullName(), user.getEmail(), roles, token);
+                    return new AuthResponse(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), roles, token);
                 })
                 .orElseGet(() -> {
                     Set<String> roles = authentication.getAuthorities().stream()
@@ -107,11 +113,47 @@ public class AuthService {
                             .map(role -> role.replace("ROLE_", ""))
                             .collect(Collectors.toSet());
                     String token = jwtService.generateToken(request.email(), roles, null);
-                    String fullName = appProperties.getAdmin().getFullName() == null
+                    String adminFullName = appProperties.getAdmin().getFullName() == null
                             ? "InMemory Admin"
                             : appProperties.getAdmin().getFullName();
-                    return new AuthResponse(null, fullName, request.email(), roles, token);
+                    return new AuthResponse(
+                            null,
+                            extractFirstName(adminFullName),
+                            extractLastName(adminFullName),
+                            request.email(),
+                            roles,
+                            token
+                    );
                 });
+    }
+
+    public AuthResponse issueSwaggerAdminToken() {
+        AppProperties.Admin admin = appProperties.getAdmin();
+        if (!admin.isEnabled() || isBlank(admin.getUsername())) {
+            throw new ErrorMessageException("In-memory admin o'chirilgan yoki username sozlanmagan", ErrorCodes.BadRequest);
+        }
+
+        Set<String> roles = Set.of("ADMIN");
+        String token = jwtService.generateToken(admin.getUsername(), roles, null);
+        String adminFullName = admin.getFullName() == null || admin.getFullName().isBlank()
+                ? "InMemory Admin"
+                : admin.getFullName();
+        return new AuthResponse(
+                null,
+                extractFirstName(adminFullName),
+                extractLastName(adminFullName),
+                admin.getUsername(),
+                roles,
+                token
+        );
+    }
+
+    public String resolveSwaggerPanelToken() {
+        String configured = appProperties.getSwagger().getPanelToken();
+        if (!isBlank(configured)) {
+            return configured.trim();
+        }
+        return issueSwaggerAdminToken().token();
     }
 
     private void sendOtp(String email) {
@@ -124,5 +166,33 @@ public class AuthService {
                 .build();
         otpRepository.save(otp);
         mailService.sendOtp(email, code);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    private String extractFirstName(String fullName) {
+        if (isBlank(fullName)) {
+            return "";
+        }
+        String normalized = fullName.trim().replaceAll("\\s+", " ");
+        int firstSpace = normalized.indexOf(' ');
+        if (firstSpace < 0) {
+            return normalized;
+        }
+        return normalized.substring(0, firstSpace);
+    }
+
+    private String extractLastName(String fullName) {
+        if (isBlank(fullName)) {
+            return "";
+        }
+        String normalized = fullName.trim().replaceAll("\\s+", " ");
+        int firstSpace = normalized.indexOf(' ');
+        if (firstSpace < 0) {
+            return "";
+        }
+        return normalized.substring(firstSpace + 1);
     }
 }

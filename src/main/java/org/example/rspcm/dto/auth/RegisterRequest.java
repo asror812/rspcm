@@ -9,7 +9,8 @@ import jakarta.validation.constraints.Size;
 import java.util.Set;
 
 public record RegisterRequest(
-        @NotBlank String fullName,
+        @NotBlank String firstName,
+        @NotBlank String lastName,
         @NotBlank @Email String email,
         @NotBlank @Size(min = 6) String password,
         @NotEmpty Set<RoleName> roles

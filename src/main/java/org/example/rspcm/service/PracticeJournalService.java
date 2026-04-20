@@ -1,9 +1,10 @@
 package org.example.rspcm.service;
 
 import org.example.rspcm.dto.practice.PracticeJournalRequest;
-import org.example.rspcm.exception.BadRequestException;
+import org.example.rspcm.exception.ErrorCodes;
+import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.Practice;
 import org.example.rspcm.model.entity.PracticeJournal;
 import org.example.rspcm.model.entity.PracticeTeam;
@@ -27,7 +28,7 @@ public class PracticeJournalService {
     private final CurrentUserService currentUserService;
 
     public List<PracticeJournal> findMine() {
-        AppUser student = currentUserService.getCurrentUser();
+        User student = currentUserService.getCurrentUser();
         return journalRepository.findByStudentId(student.getId());
     }
 
@@ -37,13 +38,13 @@ public class PracticeJournalService {
 
     @Transactional
     public PracticeJournal submit(PracticeJournalRequest request) {
-        AppUser student = currentUserService.getCurrentUser();
+        User student = currentUserService.getCurrentUser();
         Practice practice = practiceRepository.findById(request.practiceId())
                 .orElseThrow(() -> new NotFoundException("Practice topilmadi: " + request.practiceId()));
 
         if (practice.isCalendarRequired()
                 && (isBlank(request.calendarText()) && isBlank(request.calendarFilePath()))) {
-            throw new BadRequestException("Bu practice uchun calendar to'ldirish majburiy");
+            throw new ErrorMessageException("Bu practice uchun calendar to'ldirish majburiy", ErrorCodes.BadRequest);
         }
 
         PracticeTeam team = null;

@@ -1,7 +1,7 @@
 package org.example.rspcm.service;
 
 import org.example.rspcm.dto.exam.ExamRequest;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.Exam;
 import org.example.rspcm.model.entity.StudyGroup;
@@ -80,7 +80,7 @@ public class ExamService {
         return new HashSet<>(groupRepository.findAllById(groupIds));
     }
 
-    private Set<AppUser> resolveStudents(Set<Long> studentIds) {
+    private Set<User> resolveStudents(Set<Long> studentIds) {
         if (studentIds == null || studentIds.isEmpty()) {
             return new HashSet<>();
         }

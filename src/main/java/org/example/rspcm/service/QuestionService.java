@@ -1,7 +1,8 @@
 package org.example.rspcm.service;
 
 import org.example.rspcm.dto.question.QuestionRequest;
-import org.example.rspcm.exception.BadRequestException;
+import org.example.rspcm.exception.ErrorCodes;
+import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.Question;
 import org.example.rspcm.repository.ExamRepository;
@@ -70,7 +71,7 @@ public class QuestionService {
 
     private void validateOwner(Long examId, Long practiceId) {
         if ((examId == null && practiceId == null) || (examId != null && practiceId != null)) {
-            throw new BadRequestException("Question faqat exam yoki practice bilan bog'lanishi kerak");
+            throw new ErrorMessageException("Question faqat exam yoki practice bilan bog'lanishi kerak", ErrorCodes.BadRequest);
         }
     }
 }

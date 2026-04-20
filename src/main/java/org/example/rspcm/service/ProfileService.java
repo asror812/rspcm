@@ -3,7 +3,7 @@ package org.example.rspcm.service;
 import org.example.rspcm.dto.profile.StudentProfileUpdateRequest;
 import org.example.rspcm.dto.profile.TeacherProfileUpdateRequest;
 import org.example.rspcm.exception.NotFoundException;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.StudentProfile;
 import org.example.rspcm.model.entity.Subject;
 import org.example.rspcm.model.entity.TeacherProfile;
@@ -58,7 +58,7 @@ public class ProfileService {
         return teacherProfileRepository.save(profile);
     }
 
-    private AppUser getUser(Long userId) {
+    private User getUser(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User topilmadi: " + userId));
     }
 

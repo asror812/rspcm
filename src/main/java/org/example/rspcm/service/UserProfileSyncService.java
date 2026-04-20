@@ -21,9 +21,9 @@ public class UserProfileSyncService {
     private final StudentProfileRepository studentProfileRepository;
 
     @Transactional
-    public void sync(AppUser user) {
+    public void sync(User user) {
         Set<RoleName> roleNames = user.getRoles().stream()
-                .map(AppRole::getName)
+                .map(Role::getName)
                 .collect(Collectors.toSet());
 
         syncAdmin(user, roleNames.contains(RoleName.ADMIN));
@@ -31,7 +31,7 @@ public class UserProfileSyncService {
         syncStudent(user, roleNames.contains(RoleName.STUDENT));
     }
 
-    private void syncAdmin(AppUser user, boolean hasRole) {
+    private void syncAdmin(User user, boolean hasRole) {
         if (hasRole) {
             adminProfileRepository.findByUserId(user.getId())
                     .orElseGet(() -> adminProfileRepository.save(AdminProfile.builder().user(user).build()));
@@ -40,7 +40,7 @@ public class UserProfileSyncService {
         adminProfileRepository.deleteByUserId(user.getId());
     }
 
-    private void syncTeacher(AppUser user, boolean hasRole) {
+    private void syncTeacher(User user, boolean hasRole) {
         if (hasRole) {
             teacherProfileRepository.findByUserId(user.getId())
                     .orElseGet(() -> teacherProfileRepository.save(TeacherProfile.builder().user(user).build()));
@@ -49,7 +49,7 @@ public class UserProfileSyncService {
         teacherProfileRepository.deleteByUserId(user.getId());
     }
 
-    private void syncStudent(AppUser user, boolean hasRole) {
+    private void syncStudent(User user, boolean hasRole) {
         if (hasRole) {
             studentProfileRepository.findByUserId(user.getId())
                     .orElseGet(() -> studentProfileRepository.save(StudentProfile.builder().user(user).build()));

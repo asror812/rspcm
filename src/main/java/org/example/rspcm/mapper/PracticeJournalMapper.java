@@ -10,9 +10,9 @@ public final class PracticeJournalMapper {
     public static PracticeJournalResponse toResponse(PracticeJournal journal) {
         return new PracticeJournalResponse(
                 journal.getId(),
-                journal.getPractice().getId(),
-                journal.getStudent().getId(),
-                journal.getTeam() == null ? null : journal.getTeam().getId(),
+                SummaryMapper.toPracticeSummary(journal.getPractice()),
+                SummaryMapper.toUserSummary(journal.getStudent()),
+                journal.getTeam() == null ? null : SummaryMapper.toPracticeTeamSummary(journal.getTeam()),
                 journal.getContent(),
                 journal.getFilePath(),
                 journal.getCalendarText(),

@@ -13,6 +13,7 @@ public class AppProperties {
     private Otp otp = new Otp();
     private Mail mail = new Mail();
     private Admin admin = new Admin();
+    private Swagger swagger = new Swagger();
 
     @Getter
     @Setter
@@ -40,5 +41,11 @@ public class AppProperties {
         private String username;
         private String password;
         private String fullName;
+    }
+
+    @Getter
+    @Setter
+    public static class Swagger {
+        private String panelToken;
     }
 }

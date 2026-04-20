@@ -8,6 +8,11 @@ public final class PracticeTopicMapper {
     }
 
     public static PracticeTopicResponse toResponse(PracticeTopic topic) {
-        return new PracticeTopicResponse(topic.getId(), topic.getPractice().getId(), topic.getTitle(), topic.getDescription());
+        return new PracticeTopicResponse(
+                topic.getId(),
+                SummaryMapper.toPracticeSummary(topic.getPractice()),
+                topic.getTitle(),
+                topic.getDescription()
+        );
     }
 }

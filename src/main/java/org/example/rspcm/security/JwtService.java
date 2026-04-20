@@ -4,7 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.example.rspcm.config.AppProperties;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.User;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -26,21 +26,22 @@ public class JwtService {
         this.appProperties = appProperties;
     }
 
-    public String generateToken(AppUser user) {
+    public String generateToken(User user) {
         Set<String> roles = user.getRoles().stream()
                 .map(r -> r.getName().name())
                 .collect(Collectors.toSet());
+
         return generateToken(user.getEmail(), roles, user.getId());
     }
 
     public String generateToken(String username, Set<String> roles, Long userId) {
         Instant now = Instant.now();
         Instant expiry = now.plus(appProperties.getJwt().getExpirationMinutes(), ChronoUnit.MINUTES);
+
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", roles);
-        if (userId != null) {
-            claims.put("uid", userId);
-        }
+
+        if (userId != null) claims.put("uid", userId);
 
         return Jwts.builder()
                 .subject(username)

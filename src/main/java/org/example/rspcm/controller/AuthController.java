@@ -41,4 +41,14 @@ public class AuthController {
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
     }
+
+    @PostMapping("/swagger-admin-token")
+    public AuthResponse swaggerAdminToken() {
+        return authService.issueSwaggerAdminToken();
+    }
+
+    @PostMapping("/swagger-panel-token")
+    public Map<String, String> swaggerPanelToken() {
+        return Map.of("token", authService.resolveSwaggerPanelToken());
+    }
 }

@@ -21,6 +21,7 @@ public class InMemoryAdminUserDetailsService implements UserDetailsService {
         if (!appProperties.getAdmin().isEnabled()) {
             throw new UsernameNotFoundException("In-memory admin disabled");
         }
+
         return inMemoryUserDetailsManager.loadUserByUsername(username);
     }
 }

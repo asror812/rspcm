@@ -3,13 +3,14 @@ spring:
     name: rspcm
 
   profiles:
-    active: dev
+    active: local
 
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+    operations-sorter: method
 
 app:
   jwt:
@@ -21,6 +22,6 @@ app:
     from: ${MAIL_FROM:no-reply@rspcm.local}
   admin:
     enabled: ${INMEMORY_ADMIN_ENABLED:true}
-    username: ${INMEMORY_ADMIN_USERNAME:asror}
+    username: ${INMEMORY_ADMIN_USERNAME:admin@rspcm}
     password: ${INMEMORY_ADMIN_PASSWORD:123}
-    full-name: ${INMEMORY_ADMIN_FULL_NAME:Bootstrap Admin}
+    full-name: ${INMEMORY_ADMIN_FULL_NAME:Super Admin}

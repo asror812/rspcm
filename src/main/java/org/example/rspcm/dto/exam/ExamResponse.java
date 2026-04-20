@@ -1,5 +1,9 @@
 package org.example.rspcm.dto.exam;
 
+import org.example.rspcm.dto.common.GroupSummary;
+import org.example.rspcm.dto.common.SubjectSummary;
+import org.example.rspcm.dto.common.UserSummary;
+
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -10,9 +14,9 @@ public record ExamResponse(
         LocalDateTime startAt,
         LocalDateTime endAt,
         Integer maxScore,
-        Set<Long> groupIds,
-        Set<Long> studentIds,
-        Long createdBy,
-        Long subjectId
+        Set<GroupSummary> groups,
+        Set<UserSummary> students,
+        UserSummary createdBy,
+        SubjectSummary subject
 ) {
 }

@@ -30,7 +30,7 @@ public class StudentProfile {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", unique = true)
-    private AppUser user;
+    private User user;
 
     private Integer course;
 

@@ -1,10 +1,12 @@
 package org.example.rspcm.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.rspcm.dto.user.UserCreateRequest;
 import org.example.rspcm.dto.user.UserUpdateRequest;
-import org.example.rspcm.exception.BadRequestException;
+import org.example.rspcm.exception.ErrorCodes;
+import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final AppUserRepository userRepository;
@@ -22,45 +25,47 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserProfileSyncService userProfileSyncService;
 
-    public List<AppUser> findAll() {
+    public List<User> findAll() {
         return userRepository.findAll();
     }
 
-    public AppUser findById(Long id) {
+    public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new NotFoundException("User topilmadi: " + id));
     }
 
     @Transactional
-    public AppUser create(UserCreateRequest request) {
+    public User create(UserCreateRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new BadRequestException("Email allaqachon mavjud");
+            throw new ErrorMessageException("Email allaqachon mavjud", ErrorCodes.AlreadyExists);
         }
-        AppUser user = AppUser.builder()
-                .fullName(request.fullName())
+        User user = User.builder()
+                .firstName(request.firstName())
+                .lastName(request.lastName())
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .enabled(request.enabled())
                 .roles(roleService.resolveRoles(request.roles()))
                 .build();
-        AppUser saved = userRepository.save(user);
+        User saved = userRepository.save(user);
         userProfileSyncService.sync(saved);
         return saved;
     }
 
     @Transactional
-    public AppUser update(Long id, UserUpdateRequest request) {
-        AppUser user = findById(id);
-        user.setFullName(request.fullName());
+    public User update(Long id, UserUpdateRequest request) {
+        User user = findById(id);
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
         user.setEnabled(request.enabled());
         user.setRoles(roleService.resolveRoles(request.roles()));
-        AppUser saved = userRepository.save(user);
+        User saved = userRepository.save(user);
         userProfileSyncService.sync(saved);
         return saved;
     }
 
     @Transactional
     public void delete(Long id) {
-        AppUser user = findById(id);
+        User user = findById(id);
         userRepository.delete(user);
     }
 }

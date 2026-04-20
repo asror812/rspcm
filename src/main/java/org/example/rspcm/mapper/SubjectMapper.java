@@ -1,7 +1,7 @@
 package org.example.rspcm.mapper;
 
+import org.example.rspcm.dto.common.UserSummary;
 import org.example.rspcm.dto.subject.SubjectResponse;
-import org.example.rspcm.model.entity.AppUser;
 import org.example.rspcm.model.entity.Subject;
 
 import java.util.Set;
@@ -12,8 +12,9 @@ public final class SubjectMapper {
     }
 
     public static SubjectResponse toResponse(Subject subject) {
-        Set<Long> studentIds = subject.getStudents().stream().map(AppUser::getId).collect(Collectors.toSet());
-        Set<Long> teacherIds = subject.getTeachers().stream().map(AppUser::getId).collect(Collectors.toSet());
-        return new SubjectResponse(subject.getId(), subject.getName(), subject.getDescription(), studentIds, teacherIds);
+        Set<UserSummary> teachers = subject.getTeachers().stream()
+                .map(SummaryMapper::toUserSummary)
+                .collect(Collectors.toSet());
+        return new SubjectResponse(subject.getId(), subject.getName(), subject.getDescription(), teachers);
     }
 }

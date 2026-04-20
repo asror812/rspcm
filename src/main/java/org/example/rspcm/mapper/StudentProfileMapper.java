@@ -10,7 +10,7 @@ public final class StudentProfileMapper {
     public static StudentProfileResponse toResponse(StudentProfile profile) {
         return new StudentProfileResponse(
                 profile.getId(),
-                profile.getUser().getId(),
+                SummaryMapper.toUserSummary(profile.getUser()),
                 profile.getCourse(),
                 profile.getStudentNumber(),
                 profile.getPhoneNumber(),

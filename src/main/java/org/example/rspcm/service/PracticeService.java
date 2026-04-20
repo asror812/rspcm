@@ -1,9 +1,10 @@
 package org.example.rspcm.service;
 
 import org.example.rspcm.dto.practice.PracticeRequest;
-import org.example.rspcm.exception.BadRequestException;
+import org.example.rspcm.exception.ErrorCodes;
+import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
-import org.example.rspcm.model.entity.AppUser;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.Practice;
 import org.example.rspcm.model.entity.StudyGroup;
 import org.example.rspcm.model.enums.WorkMode;
@@ -92,10 +93,10 @@ public class PracticeService {
 
     private void validateTeamConfig(WorkMode mode, Integer teamSize) {
         if (mode == WorkMode.TEAM && (teamSize == null || teamSize < 2)) {
-            throw new BadRequestException("TEAM mode uchun teamSize kamida 2 bo'lishi kerak");
+            throw new ErrorMessageException("TEAM mode uchun teamSize kamida 2 bo'lishi kerak", ErrorCodes.BadRequest);
         }
         if (mode == WorkMode.INDIVIDUAL && teamSize != null) {
-            throw new BadRequestException("INDIVIDUAL mode uchun teamSize bo'sh bo'lishi kerak");
+            throw new ErrorMessageException("INDIVIDUAL mode uchun teamSize bo'sh bo'lishi kerak", ErrorCodes.BadRequest);
         }
     }
 
@@ -106,7 +107,7 @@ public class PracticeService {
         return new HashSet<>(groupRepository.findAllById(groupIds));
     }
 
-    private Set<AppUser> resolveStudents(Set<Long> studentIds) {
+    private Set<User> resolveStudents(Set<Long> studentIds) {
         if (studentIds == null || studentIds.isEmpty()) {
             return new HashSet<>();
         }

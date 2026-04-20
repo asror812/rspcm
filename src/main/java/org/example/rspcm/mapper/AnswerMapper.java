@@ -10,8 +10,8 @@ public final class AnswerMapper {
     public static AnswerResponse toResponse(Answer answer) {
         return new AnswerResponse(
                 answer.getId(),
-                answer.getQuestion().getId(),
-                answer.getStudent().getId(),
+                SummaryMapper.toQuestionSummary(answer.getQuestion()),
+                SummaryMapper.toUserSummary(answer.getStudent()),
                 answer.getAnswerText(),
                 answer.getAnswerUrl(),
                 answer.getFilePath(),

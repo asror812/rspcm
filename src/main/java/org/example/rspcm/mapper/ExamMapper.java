@@ -1,9 +1,10 @@
 package org.example.rspcm.mapper;
 
+import org.example.rspcm.dto.common.GroupSummary;
+import org.example.rspcm.dto.common.SubjectSummary;
+import org.example.rspcm.dto.common.UserSummary;
 import org.example.rspcm.dto.exam.ExamResponse;
-import org.example.rspcm.model.entity.AppUser;
 import org.example.rspcm.model.entity.Exam;
-import org.example.rspcm.model.entity.StudyGroup;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,8 +14,10 @@ public final class ExamMapper {
     }
 
     public static ExamResponse toResponse(Exam exam) {
-        Set<Long> groupIds = exam.getGroups().stream().map(StudyGroup::getId).collect(Collectors.toSet());
-        Set<Long> studentIds = exam.getTargetStudents().stream().map(AppUser::getId).collect(Collectors.toSet());
+        Set<GroupSummary> groups = exam.getGroups().stream().map(SummaryMapper::toGroupSummary).collect(Collectors.toSet());
+        Set<UserSummary> students = exam.getTargetStudents().stream().map(SummaryMapper::toUserSummary).collect(Collectors.toSet());
+        UserSummary createdBy = SummaryMapper.toUserSummary(exam.getCreatedBy());
+        SubjectSummary subject = exam.getSubject() == null ? null : SummaryMapper.toSubjectSummary(exam.getSubject());
         return new ExamResponse(
                 exam.getId(),
                 exam.getTitle(),
@@ -22,10 +25,10 @@ public final class ExamMapper {
                 exam.getStartAt(),
                 exam.getEndAt(),
                 exam.getMaxScore(),
-                groupIds,
-                studentIds,
-                exam.getCreatedBy().getId(),
-                exam.getSubject() == null ? null : exam.getSubject().getId()
+                groups,
+                students,
+                createdBy,
+                subject
         );
     }
 }

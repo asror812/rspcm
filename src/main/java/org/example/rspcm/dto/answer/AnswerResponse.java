@@ -1,11 +1,14 @@
 package org.example.rspcm.dto.answer;
 
+import org.example.rspcm.dto.common.QuestionSummary;
+import org.example.rspcm.dto.common.UserSummary;
+
 import java.time.LocalDateTime;
 
 public record AnswerResponse(
         Long id,
-        Long questionId,
-        Long studentId,
+        QuestionSummary question,
+        UserSummary student,
         String answerText,
         String answerUrl,
         String filePath,

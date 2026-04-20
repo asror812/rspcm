@@ -47,11 +47,20 @@ public class StudyGroup {
     @Builder.Default
     @ManyToMany
     @JoinTable(
+            name = "group_subjects",
+            joinColumns = @JoinColumn(name = "group_id"),
+            inverseJoinColumns = @JoinColumn(name = "subject_id")
+    )
+    private Set<Subject> subjects = new HashSet<>();
+
+    @Builder.Default
+    @ManyToMany
+    @JoinTable(
             name = "group_teachers",
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "teacher_id")
     )
-    private Set<AppUser> teachers = new HashSet<>();
+    private Set<User> teachers = new HashSet<>();
 
     @Builder.Default
     @ManyToMany
@@ -60,5 +69,5 @@ public class StudyGroup {
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "student_id")
     )
-    private Set<AppUser> students = new HashSet<>();
+    private Set<User> students = new HashSet<>();
 }

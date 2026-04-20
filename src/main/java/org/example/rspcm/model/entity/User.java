@@ -2,6 +2,7 @@ package org.example.rspcm.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,29 +26,38 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "subjects")
-public class Subject {
+@Table(name = "users")
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String firstName;
+
+    @Column(nullable = false)
+    private String lastName;
+
     @Column(nullable = false, unique = true)
-    private String name;
+    private String email;
 
-    @Column(length = 1000)
-    private String description;
+    @Column(nullable = false)
+    private String password;
+
+    private LocalDate birthDate;
+
+    private String phoneNumber;
+
+    @Column(nullable = false)
+    private boolean enabled;
 
     @Builder.Default
-    @ManyToMany(mappedBy = "subjects")
-    private Set<StudyGroup> groups = new HashSet<>();
-
-    @Builder.Default
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "subject_teachers",
-            joinColumns = @JoinColumn(name = "subject_id"),
-            inverseJoinColumns = @JoinColumn(name = "teacher_id")
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<User> teachers = new HashSet<>();
+    private Set<Role> roles = new HashSet<>();
 }

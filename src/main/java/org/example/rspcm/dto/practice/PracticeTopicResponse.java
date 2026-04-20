@@ -1,8 +1,10 @@
 package org.example.rspcm.dto.practice;
 
+import org.example.rspcm.dto.common.PracticeSummary;
+
 public record PracticeTopicResponse(
         Long id,
-        Long practiceId,
+        PracticeSummary practice,
         String title,
         String description
 ) {

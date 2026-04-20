@@ -35,7 +35,7 @@ public class TeacherProfile {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", unique = true)
-    private AppUser user;
+    private User user;
 
     @Column(length = 128)
     private String academicDegree;

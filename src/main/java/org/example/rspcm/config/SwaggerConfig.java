@@ -17,7 +17,14 @@ public class SwaggerConfig {
                 .info(new Info()
                         .title("RSPCM API")
                         .version("v1")
-                        .description("Online practice and exam management API"))
+                        .description("""
+                                ### Admin JWT token
+                                ```
+                                eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbkByc3BjbSIsImlhdCI6MTc3NjE4MDkzOSwiZXhwIjo3Mzc3NjE4MDkzO\
+                                Swicm9sZXMiOlsiRkFDVE9SX1BBU1NXT1JEIiwiQURNSU4iXX0.x5Tpbj1eLxQpS9fpaDyw76W4ErCZt0zL-CewxojlbTKEymfcogSJ5KaQJzBL7jfE
+                                ```
+                                """
+                ))
                 .addSecurityItem(new SecurityRequirement().addList(schemeName))
                 .schemaRequirement(
                         schemeName,
