@@ -7,6 +7,8 @@ import org.example.rspcm.mapper.AnswerMapper;
 import org.example.rspcm.service.AnswerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,43 +31,44 @@ public class AnswerController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public List<AnswerResponse> getAll() {
-        return answerService.findAll().stream().map(AnswerMapper::toResponse).toList();
+    public ResponseEntity<List<AnswerResponse>> getAll() {
+        return ResponseEntity.ok(answerService.findAll().stream().map(AnswerMapper::toResponse).toList());
     }
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('STUDENT')")
-    public List<AnswerResponse> myAnswers() {
-        return answerService.findMine().stream().map(AnswerMapper::toResponse).toList();
+    public ResponseEntity<List<AnswerResponse>> myAnswers() {
+        return ResponseEntity.ok(answerService.findMine().stream().map(AnswerMapper::toResponse).toList());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
-    public AnswerResponse getById(@PathVariable Long id) {
-        return AnswerMapper.toResponse(answerService.findById(id));
+    public ResponseEntity<AnswerResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(AnswerMapper.toResponse(answerService.findById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('STUDENT')")
-    public AnswerResponse create(@Valid @RequestBody AnswerRequest request) {
-        return AnswerMapper.toResponse(answerService.create(request));
+    public ResponseEntity<AnswerResponse> create(@Valid @RequestBody AnswerRequest request) {
+        return ResponseEntity.ok(AnswerMapper.toResponse(answerService.create(request)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('STUDENT')")
-    public AnswerResponse updateMine(@PathVariable Long id, @Valid @RequestBody AnswerRequest request) {
-        return AnswerMapper.toResponse(answerService.updateMine(id, request));
+    public ResponseEntity<AnswerResponse> updateMine(@PathVariable Long id, @Valid @RequestBody AnswerRequest request) {
+        return ResponseEntity.ok(AnswerMapper.toResponse(answerService.updateMine(id, request)));
     }
 
     @PatchMapping("/{id}/score")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public AnswerResponse score(@PathVariable Long id, @Valid @RequestBody AnswerScoreRequest request) {
-        return AnswerMapper.toResponse(answerService.score(id, request));
+    public ResponseEntity<AnswerResponse> score(@PathVariable Long id, @Valid @RequestBody AnswerScoreRequest request) {
+        return ResponseEntity.ok(AnswerMapper.toResponse(answerService.score(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('STUDENT')")
-    public void deleteMine(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteMine(@PathVariable Long id) {
         answerService.deleteMine(id);
+        return ResponseEntity.noContent().build();
     }
 }

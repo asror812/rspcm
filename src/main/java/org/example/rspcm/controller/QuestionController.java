@@ -6,6 +6,8 @@ import org.example.rspcm.mapper.QuestionMapper;
 import org.example.rspcm.service.QuestionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,31 +29,32 @@ public class QuestionController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
-    public List<QuestionResponse> getAll() {
-        return questionService.findAll().stream().map(QuestionMapper::toResponse).toList();
+    public ResponseEntity<List<QuestionResponse>> getAll() {
+        return ResponseEntity.ok(questionService.findAll().stream().map(QuestionMapper::toResponse).toList());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
-    public QuestionResponse getById(@PathVariable Long id) {
-        return QuestionMapper.toResponse(questionService.findById(id));
+    public ResponseEntity<QuestionResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(QuestionMapper.toResponse(questionService.findById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public QuestionResponse create(@Valid @RequestBody QuestionRequest request) {
-        return QuestionMapper.toResponse(questionService.create(request));
+    public ResponseEntity<QuestionResponse> create(@Valid @RequestBody QuestionRequest request) {
+        return ResponseEntity.ok(QuestionMapper.toResponse(questionService.create(request)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public QuestionResponse update(@PathVariable Long id, @Valid @RequestBody QuestionRequest request) {
-        return QuestionMapper.toResponse(questionService.update(id, request));
+    public ResponseEntity<QuestionResponse> update(@PathVariable Long id, @Valid @RequestBody QuestionRequest request) {
+        return ResponseEntity.ok(QuestionMapper.toResponse(questionService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         questionService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

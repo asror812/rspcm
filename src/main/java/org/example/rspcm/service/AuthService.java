@@ -10,8 +10,9 @@ import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.OtpVerification;
-import org.example.rspcm.repository.AppUserRepository;
+import org.example.rspcm.model.entity.Role;
 import org.example.rspcm.repository.OtpVerificationRepository;
+import org.example.rspcm.repository.UserRepository;
 import org.example.rspcm.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
     private final OtpVerificationRepository otpRepository;
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
@@ -40,6 +41,7 @@ public class AuthService {
     private final MailService mailService;
     private final AppProperties appProperties;
     private final UserProfileSyncService userProfileSyncService;
+    private final Random random = new Random();
 
     @Transactional
     public String register(RegisterRequest request) {
@@ -76,7 +78,8 @@ public class AuthService {
 
     @Transactional
     public String verifyOtp(VerifyOtpRequest request) {
-        OtpVerification otp = otpRepository.findFirstByEmailAndCodeAndUsedFalseOrderByIdDesc(request.email(), request.code())
+        OtpVerification otp = otpRepository
+                .findFirstByEmailAndCodeAndUsedFalseOrderByIdDesc(request.email(), request.code())
                 .orElseThrow(() -> new ErrorMessageException("OTP noto'g'ri", ErrorCodes.InvalidParams));
 
         if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
@@ -94,18 +97,21 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
-        );
+                new UsernamePasswordAuthenticationToken(request.email(), request.password()));
 
         return userRepository.findByEmail(request.email())
                 .map(user -> {
                     if (!user.isEnabled()) {
-                        throw new ErrorMessageException("Akkaunt tasdiqlanmagan, OTP kiriting",  ErrorCodes.InvalidParams);
+                        throw new ErrorMessageException("Akkaunt tasdiqlanmagan, OTP kiriting",
+                                ErrorCodes.InvalidParams);
                     }
 
                     String token = jwtService.generateToken(user);
-                    Set<String> roles = user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toSet());
-                    return new AuthResponse(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), roles, token);
+                    Set<String> roles = user.getRoles().stream()
+                            .map(Role::getName).collect(Collectors.toSet());
+
+                    return new AuthResponse(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(),
+                            roles, token);
                 })
                 .orElseGet(() -> {
                     Set<String> roles = authentication.getAuthorities().stream()
@@ -122,15 +128,15 @@ public class AuthService {
                             extractLastName(adminFullName),
                             request.email(),
                             roles,
-                            token
-                    );
+                            token);
                 });
     }
 
     public AuthResponse issueSwaggerAdminToken() {
         AppProperties.Admin admin = appProperties.getAdmin();
         if (!admin.isEnabled() || isBlank(admin.getUsername())) {
-            throw new ErrorMessageException("In-memory admin o'chirilgan yoki username sozlanmagan", ErrorCodes.BadRequest);
+            throw new ErrorMessageException("In-memory admin o'chirilgan yoki username sozlanmagan",
+                    ErrorCodes.BadRequest);
         }
 
         Set<String> roles = Set.of("ADMIN");
@@ -144,8 +150,7 @@ public class AuthService {
                 extractLastName(adminFullName),
                 admin.getUsername(),
                 roles,
-                token
-        );
+                token);
     }
 
     public String resolveSwaggerPanelToken() {
@@ -157,7 +162,7 @@ public class AuthService {
     }
 
     private void sendOtp(String email) {
-        String code = "%06d".formatted(new Random().nextInt(1_000_000));
+        String code = "%06d".formatted(random.nextInt(1_000_000));
         OtpVerification otp = OtpVerification.builder()
                 .email(email)
                 .code(code)

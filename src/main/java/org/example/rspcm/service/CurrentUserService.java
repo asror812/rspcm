@@ -2,7 +2,7 @@ package org.example.rspcm.service;
 
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.User;
-import org.example.rspcm.repository.AppUserRepository;
+import org.example.rspcm.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CurrentUserService {
 
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
 
     public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

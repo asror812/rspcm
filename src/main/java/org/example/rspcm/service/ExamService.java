@@ -5,7 +5,7 @@ import org.example.rspcm.model.entity.User;
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.Exam;
 import org.example.rspcm.model.entity.StudyGroup;
-import org.example.rspcm.repository.AppUserRepository;
+import org.example.rspcm.repository.UserRepository;
 import org.example.rspcm.repository.ExamRepository;
 import org.example.rspcm.repository.StudyGroupRepository;
 import org.example.rspcm.repository.SubjectRepository;
@@ -24,7 +24,7 @@ public class ExamService {
     private final ExamRepository examRepository;
     private final StudyGroupRepository groupRepository;
     private final SubjectRepository subjectRepository;
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
 
     public List<Exam> findAll() {

@@ -6,6 +6,8 @@ import org.example.rspcm.mapper.SubjectMapper;
 import org.example.rspcm.service.SubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,7 +47,8 @@ public class SubjectController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         subjectService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

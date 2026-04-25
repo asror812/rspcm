@@ -6,6 +6,8 @@ import org.example.rspcm.mapper.PracticeTeamMapper;
 import org.example.rspcm.service.PracticeTeamService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,13 +27,13 @@ public class PracticeTeamController {
 
     @GetMapping("/practice/{practiceId}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
-    public List<PracticeTeamResponse> byPractice(@PathVariable Long practiceId) {
-        return teamService.getByPracticeId(practiceId).stream().map(PracticeTeamMapper::toResponse).toList();
+    public ResponseEntity<List<PracticeTeamResponse>> byPractice(@PathVariable Long practiceId) {
+        return ResponseEntity.ok(teamService.getByPracticeId(practiceId).stream().map(PracticeTeamMapper::toResponse).toList());
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public PracticeTeamResponse create(@Valid @RequestBody PracticeTeamRequest request) {
-        return PracticeTeamMapper.toResponse(teamService.create(request));
+    public ResponseEntity<PracticeTeamResponse> create(@Valid @RequestBody PracticeTeamRequest request) {
+        return ResponseEntity.ok(PracticeTeamMapper.toResponse(teamService.create(request)));
     }
 }

@@ -7,6 +7,8 @@ import org.example.rspcm.mapper.UserMapper;
 import org.example.rspcm.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,27 +30,28 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<UserResponse> getAll() {
-        return userService.findAll().stream().map(UserMapper::toResponse).toList();
+    public ResponseEntity<List<UserResponse>> getAll() {
+        return ResponseEntity.ok(userService.findAll().stream().map(UserMapper::toResponse).toList());
     }
 
     @GetMapping("/{id}")
-    public UserResponse getById(@PathVariable Long id) {
-        return UserMapper.toResponse(userService.findById(id));
+    public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(UserMapper.toResponse(userService.findById(id)));
     }
 
     @PostMapping
-    public UserResponse create(@Valid @RequestBody UserCreateRequest request) {
-        return UserMapper.toResponse(userService.create(request));
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserCreateRequest request) {
+        return ResponseEntity.ok(UserMapper.toResponse(userService.create(request)));
     }
 
     @PutMapping("/{id}")
-    public UserResponse update(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest request) {
-        return UserMapper.toResponse(userService.update(id, request));
+    public ResponseEntity<UserResponse> update(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest request) {
+        return ResponseEntity.ok(UserMapper.toResponse(userService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         userService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.example.rspcm.config.AppProperties;
+import org.example.rspcm.model.entity.Role;
 import org.example.rspcm.model.entity.User;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +29,7 @@ public class JwtService {
 
     public String generateToken(User user) {
         Set<String> roles = user.getRoles().stream()
-                .map(r -> r.getName().name())
-                .collect(Collectors.toSet());
+                .map(Role::getName).collect(Collectors.toSet());
 
         return generateToken(user.getEmail(), roles, user.getId());
     }
@@ -41,7 +41,8 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", roles);
 
-        if (userId != null) claims.put("uid", userId);
+        if (userId != null)
+            claims.put("uid", userId);
 
         return Jwts.builder()
                 .subject(username)

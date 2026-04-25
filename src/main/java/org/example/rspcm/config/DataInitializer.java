@@ -9,7 +9,7 @@ import org.example.rspcm.model.entity.Subject;
 import org.example.rspcm.model.entity.TeacherProfile;
 import org.example.rspcm.model.enums.GroupLanguage;
 import org.example.rspcm.model.enums.RoleName;
-import org.example.rspcm.repository.AppUserRepository;
+import org.example.rspcm.repository.UserRepository;
 import org.example.rspcm.repository.AppRoleRepository;
 import org.example.rspcm.repository.StudentProfileRepository;
 import org.example.rspcm.repository.StudyGroupRepository;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public class DataInitializer implements CommandLineRunner {
 
     private final AppRoleRepository roleRepository;
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final TeacherProfileRepository teacherProfileRepository;
     private final StudentProfileRepository studentProfileRepository;
@@ -43,9 +43,9 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String @NonNull ... args) {
         Map<RoleName, Role> roles = Arrays.stream(RoleName.values())
-                .map(roleName -> roleRepository.findByName(roleName)
-                        .orElseGet(() -> roleRepository.save(Role.builder().name(roleName).build())))
-                .collect(Collectors.toMap(Role::getName, role -> role));
+                .map(roleName -> 
+                    roleRepository.findByName(roleName).orElseGet(() -> roleRepository.save(Role.builder().name(roleName).build())))
+                .collect(Collectors.toMap(Role::getRoleName, role -> role));
 
         seedUsers(roles);
         seedAcademicRelations();

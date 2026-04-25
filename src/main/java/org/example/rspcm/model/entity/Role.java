@@ -11,11 +11,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,4 +29,16 @@ public class Role {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
     private RoleName name;
+
+    public RoleName getRoleName() {
+        return name;
+    }
+
+    public String getName() {
+        return name.name();
+    }
+
+    public Long getId() {
+        return id;
+    }
 }

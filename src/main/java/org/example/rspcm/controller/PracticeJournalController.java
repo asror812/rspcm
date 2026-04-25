@@ -6,6 +6,8 @@ import org.example.rspcm.mapper.PracticeJournalMapper;
 import org.example.rspcm.service.PracticeJournalService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,19 +27,19 @@ public class PracticeJournalController {
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('STUDENT')")
-    public List<PracticeJournalResponse> myJournals() {
-        return journalService.findMine().stream().map(PracticeJournalMapper::toResponse).toList();
+    public ResponseEntity<List<PracticeJournalResponse>> myJournals() {
+        return ResponseEntity.ok(journalService.findMine().stream().map(PracticeJournalMapper::toResponse).toList());
     }
 
     @GetMapping("/practice/{practiceId}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public List<PracticeJournalResponse> byPractice(@PathVariable Long practiceId) {
-        return journalService.findByPractice(practiceId).stream().map(PracticeJournalMapper::toResponse).toList();
+    public ResponseEntity<List<PracticeJournalResponse>> byPractice(@PathVariable Long practiceId) {
+        return ResponseEntity.ok(journalService.findByPractice(practiceId).stream().map(PracticeJournalMapper::toResponse).toList());
     }
 
     @PostMapping
     @PreAuthorize("hasRole('STUDENT')")
-    public PracticeJournalResponse submit(@Valid @RequestBody PracticeJournalRequest request) {
-        return PracticeJournalMapper.toResponse(journalService.submit(request));
+    public ResponseEntity<PracticeJournalResponse> submit(@Valid @RequestBody PracticeJournalRequest request) {
+        return ResponseEntity.ok(PracticeJournalMapper.toResponse(journalService.submit(request)));
     }
 }

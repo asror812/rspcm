@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,7 +24,7 @@ public class UserProfileSyncService {
     @Transactional
     public void sync(User user) {
         Set<RoleName> roleNames = user.getRoles().stream()
-                .map(Role::getName)
+                .map(Role::getRoleName)
                 .collect(Collectors.toSet());
 
         syncAdmin(user, roleNames.contains(RoleName.ADMIN));
@@ -33,17 +34,27 @@ public class UserProfileSyncService {
 
     private void syncAdmin(User user, boolean hasRole) {
         if (hasRole) {
-            adminProfileRepository.findByUserId(user.getId())
-                    .orElseGet(() -> adminProfileRepository.save(AdminProfile.builder().user(user).build()));
+            Optional<AdminProfile> existingAdminProfile = adminProfileRepository.findByUserId(user.getId());
+            if (existingAdminProfile.isEmpty()) {
+                adminProfileRepository.save(AdminProfile.builder().user(user).build());
+            }
             return;
         }
+
         adminProfileRepository.deleteByUserId(user.getId());
     }
 
     private void syncTeacher(User user, boolean hasRole) {
         if (hasRole) {
-            teacherProfileRepository.findByUserId(user.getId())
-                    .orElseGet(() -> teacherProfileRepository.save(TeacherProfile.builder().user(user).build()));
+            Optional<TeacherProfile> existingTeacherprofile = teacherProfileRepository.findByUserId(user.getId());
+
+            if (existingTeacherprofile.isEmpty()) {
+                teacherProfileRepository.save(
+                        TeacherProfile.builder()
+                                .user(user)
+                                .build());
+            }
+
             return;
         }
         teacherProfileRepository.deleteByUserId(user.getId());
@@ -51,8 +62,13 @@ public class UserProfileSyncService {
 
     private void syncStudent(User user, boolean hasRole) {
         if (hasRole) {
-            studentProfileRepository.findByUserId(user.getId())
-                    .orElseGet(() -> studentProfileRepository.save(StudentProfile.builder().user(user).build()));
+            Optional<StudentProfile> existingStudentProfile = studentProfileRepository.findByUserId(user.getId());
+
+            if (existingStudentProfile.isEmpty())
+                studentProfileRepository.save(
+                        StudentProfile.builder()
+                                .user(user).build());
+
             return;
         }
         studentProfileRepository.deleteByUserId(user.getId());

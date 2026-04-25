@@ -8,6 +8,8 @@ import org.example.rspcm.dto.auth.VerifyOtpRequest;
 import org.example.rspcm.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,32 +25,32 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public Map<String, String> register(@Valid @RequestBody RegisterRequest request) {
-        return Map.of("message", authService.register(request));
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/verify-otp")
-    public Map<String, String> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
-        return Map.of("message", authService.verifyOtp(request));
+    public ResponseEntity<Map<String, String>> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+        return ResponseEntity.ok(Map.of("message", authService.verifyOtp(request)));
     }
 
     @PostMapping("/resend-otp")
-    public Map<String, String> resendOtp(@Valid @RequestBody ResendOtpRequest request) {
-        return Map.of("message", authService.resendOtp(request.email()));
+    public ResponseEntity<Map<String, String>> resendOtp(@Valid @RequestBody ResendOtpRequest request) {
+        return ResponseEntity.ok(Map.of("message", authService.resendOtp(request.email())));
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request);
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/swagger-admin-token")
-    public AuthResponse swaggerAdminToken() {
-        return authService.issueSwaggerAdminToken();
+    public ResponseEntity<AuthResponse> swaggerAdminToken() {
+        return ResponseEntity.ok(authService.issueSwaggerAdminToken());
     }
 
     @PostMapping("/swagger-panel-token")
-    public Map<String, String> swaggerPanelToken() {
-        return Map.of("token", authService.resolveSwaggerPanelToken());
+    public ResponseEntity<Map<String, String>> swaggerPanelToken() {
+        return ResponseEntity.ok(Map.of("token", authService.resolveSwaggerPanelToken()));
     }
 }

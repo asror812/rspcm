@@ -6,8 +6,9 @@ import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.Subject;
 import org.example.rspcm.model.entity.User;
+import org.example.rspcm.model.entity.StudentProfile;
 import org.example.rspcm.model.entity.StudyGroup;
-import org.example.rspcm.repository.AppUserRepository;
+import org.example.rspcm.repository.UserRepository;
 import org.example.rspcm.repository.StudentProfileRepository;
 import org.example.rspcm.repository.SubjectRepository;
 import org.example.rspcm.repository.StudyGroupRepository;
@@ -33,7 +34,7 @@ import java.util.Set;
 public class StudyGroupService {
 
     private final StudyGroupRepository groupRepository;
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
     private final StudentProfileRepository studentProfileRepository;
     private final SubjectRepository subjectRepository;
 
@@ -86,6 +87,7 @@ public class StudyGroupService {
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
+            
             for (Row row : sheet) {
                 Cell cell = row.getCell(0);
                 if (cell == null || cell.getCellType() == CellType.BLANK) {
@@ -132,7 +134,7 @@ public class StudyGroupService {
             return userRepository.findByEmail(value).orElse(null);
         }
         return studentProfileRepository.findByStudentNumber(value)
-                .map(profile -> profile.getUser())
+                .map(StudentProfile::getUser)
                 .orElse(null);
     }
 }

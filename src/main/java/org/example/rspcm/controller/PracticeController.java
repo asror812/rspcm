@@ -7,6 +7,8 @@ import org.example.rspcm.mapper.PracticeMapper;
 import org.example.rspcm.service.PracticeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,37 +31,38 @@ public class PracticeController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
-    public List<PracticeResponse> getAll() {
-        return practiceService.findAll().stream().map(PracticeMapper::toResponse).toList();
+    public ResponseEntity<List<PracticeResponse>> getAll() {
+        return ResponseEntity.ok(practiceService.findAll().stream().map(PracticeMapper::toResponse).toList());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
-    public PracticeResponse getById(@PathVariable Long id) {
-        return PracticeMapper.toResponse(practiceService.findById(id));
+    public ResponseEntity<PracticeResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(PracticeMapper.toResponse(practiceService.findById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public PracticeResponse create(@Valid @RequestBody PracticeRequest request) {
-        return PracticeMapper.toResponse(practiceService.create(request));
+    public ResponseEntity<PracticeResponse> create(@Valid @RequestBody PracticeRequest request) {
+        return ResponseEntity.ok(PracticeMapper.toResponse(practiceService.create(request)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public PracticeResponse update(@PathVariable Long id, @Valid @RequestBody PracticeRequest request) {
-        return PracticeMapper.toResponse(practiceService.update(id, request));
+    public ResponseEntity<PracticeResponse> update(@PathVariable Long id, @Valid @RequestBody PracticeRequest request) {
+        return ResponseEntity.ok(PracticeMapper.toResponse(practiceService.update(id, request)));
     }
 
     @PatchMapping("/{id}/assign-groups")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public PracticeResponse assignGroups(@PathVariable Long id, @Valid @RequestBody PracticeAssignGroupsRequest request) {
-        return PracticeMapper.toResponse(practiceService.assignGroups(id, request.groupIds()));
+    public ResponseEntity<PracticeResponse> assignGroups(@PathVariable Long id, @Valid @RequestBody PracticeAssignGroupsRequest request) {
+        return ResponseEntity.ok(PracticeMapper.toResponse(practiceService.assignGroups(id, request.groupIds())));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         practiceService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

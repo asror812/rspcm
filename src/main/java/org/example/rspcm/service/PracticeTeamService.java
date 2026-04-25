@@ -8,7 +8,7 @@ import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.Practice;
 import org.example.rspcm.model.entity.PracticeTeam;
 import org.example.rspcm.model.enums.WorkMode;
-import org.example.rspcm.repository.AppUserRepository;
+import org.example.rspcm.repository.UserRepository;
 import org.example.rspcm.repository.PracticeRepository;
 import org.example.rspcm.repository.PracticeTeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class PracticeTeamService {
 
     private final PracticeTeamRepository teamRepository;
     private final PracticeRepository practiceRepository;
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
 
     public List<PracticeTeam> getByPracticeId(Long practiceId) {
         return teamRepository.findByPracticeId(practiceId);

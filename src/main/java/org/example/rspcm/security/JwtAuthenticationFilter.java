@@ -1,7 +1,5 @@
 package org.example.rspcm.security;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        try {
+
             String authHeader = request.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 filterChain.doFilter(request, response);
@@ -52,20 +50,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             filterChain.doFilter(request, response);
-
-        } catch (ExpiredJwtException e) {
-            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
-        } catch (JwtException e) {
-            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
-        } catch (Exception e) {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
-        }
-    }
-
-
-    private void sendError(HttpServletResponse response, int status, String message) throws IOException {
-        response.setStatus(status);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"" + message + "\"}");
     }
 }

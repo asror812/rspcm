@@ -7,6 +7,7 @@ import org.example.rspcm.service.StudyGroupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,37 +32,38 @@ public class StudyGroupController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
-    public List<GroupResponse> getAll() {
-        return groupService.findAll().stream().map(GroupMapper::toResponse).toList();
+    public ResponseEntity<List<GroupResponse>> getAll() {
+        return ResponseEntity.ok(groupService.findAll().stream().map(GroupMapper::toResponse).toList());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
-    public GroupResponse getById(@PathVariable Long id) {
-        return GroupMapper.toResponse(groupService.findById(id));
+    public ResponseEntity<GroupResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(GroupMapper.toResponse(groupService.findById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public GroupResponse create(@Valid @RequestBody GroupRequest request) {
-        return GroupMapper.toResponse(groupService.create(request));
+    public ResponseEntity<GroupResponse> create(@Valid @RequestBody GroupRequest request) {
+        return ResponseEntity.ok(GroupMapper.toResponse(groupService.create(request)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public GroupResponse update(@PathVariable Long id, @Valid @RequestBody GroupRequest request) {
-        return GroupMapper.toResponse(groupService.update(id, request));
+    public ResponseEntity<GroupResponse> update(@PathVariable Long id, @Valid @RequestBody GroupRequest request) {
+        return ResponseEntity.ok(GroupMapper.toResponse(groupService.update(id, request)));
     }
 
     @PostMapping(value = "/{id}/import-students", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public Map<String, Integer> importStudents(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        return groupService.importStudentsFromExcel(id, file);
+    public ResponseEntity<Map<String, Integer>> importStudents(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(groupService.importStudentsFromExcel(id, file));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         groupService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

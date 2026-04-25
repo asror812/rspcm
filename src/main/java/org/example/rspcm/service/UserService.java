@@ -7,7 +7,7 @@ import org.example.rspcm.exception.ErrorCodes;
 import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.User;
-import org.example.rspcm.repository.AppUserRepository;
+import org.example.rspcm.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 public class UserService {
 
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
     private final UserProfileSyncService userProfileSyncService;

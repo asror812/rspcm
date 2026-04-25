@@ -4,7 +4,7 @@ import org.example.rspcm.dto.subject.SubjectRequest;
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.Subject;
-import org.example.rspcm.repository.AppUserRepository;
+import org.example.rspcm.repository.UserRepository;
 import org.example.rspcm.repository.SubjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ import java.util.Set;
 public class SubjectService {
 
     private final SubjectRepository subjectRepository;
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
 
     public List<Subject> findAll() {
         return subjectRepository.findAll();

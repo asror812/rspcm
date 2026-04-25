@@ -6,6 +6,8 @@ import org.example.rspcm.mapper.ExamMapper;
 import org.example.rspcm.service.ExamService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,31 +29,32 @@ public class ExamController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
-    public List<ExamResponse> getAll() {
-        return examService.findAll().stream().map(ExamMapper::toResponse).toList();
+    public ResponseEntity<List<ExamResponse>> getAll() {
+        return ResponseEntity.ok(examService.findAll().stream().map(ExamMapper::toResponse).toList());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
-    public ExamResponse getById(@PathVariable Long id) {
-        return ExamMapper.toResponse(examService.findById(id));
+    public ResponseEntity<ExamResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(ExamMapper.toResponse(examService.findById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public ExamResponse create(@Valid @RequestBody ExamRequest request) {
-        return ExamMapper.toResponse(examService.create(request));
+    public ResponseEntity<ExamResponse> create(@Valid @RequestBody ExamRequest request) {
+        return ResponseEntity.ok(ExamMapper.toResponse(examService.create(request)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public ExamResponse update(@PathVariable Long id, @Valid @RequestBody ExamRequest request) {
-        return ExamMapper.toResponse(examService.update(id, request));
+    public ResponseEntity<ExamResponse> update(@PathVariable Long id, @Valid @RequestBody ExamRequest request) {
+        return ResponseEntity.ok(ExamMapper.toResponse(examService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         examService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

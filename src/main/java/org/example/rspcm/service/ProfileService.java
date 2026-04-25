@@ -7,7 +7,7 @@ import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.StudentProfile;
 import org.example.rspcm.model.entity.Subject;
 import org.example.rspcm.model.entity.TeacherProfile;
-import org.example.rspcm.repository.AppUserRepository;
+import org.example.rspcm.repository.UserRepository;
 import org.example.rspcm.repository.StudentProfileRepository;
 import org.example.rspcm.repository.SubjectRepository;
 import org.example.rspcm.repository.TeacherProfileRepository;
@@ -24,7 +24,7 @@ public class ProfileService {
 
     private final StudentProfileRepository studentProfileRepository;
     private final TeacherProfileRepository teacherProfileRepository;
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
 
     public StudentProfile getStudentProfile(Long userId) {
