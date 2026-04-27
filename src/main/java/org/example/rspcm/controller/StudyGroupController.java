@@ -3,12 +3,14 @@ package org.example.rspcm.controller;
 import org.example.rspcm.dto.group.GroupRequest;
 import org.example.rspcm.dto.group.GroupResponse;
 import org.example.rspcm.mapper.GroupMapper;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.service.StudyGroupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +31,12 @@ import java.util.Map;
 public class StudyGroupController {
 
     private final StudyGroupService groupService;
+
+    @GetMapping("/own")
+    @PreAuthorize("hasAnyRole('TEACHER')")
+    public ResponseEntity<List<GroupResponse>> getOwnGroups(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(groupService.findOwnGroups(user).stream().map(GroupMapper::toResponse).toList());
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")

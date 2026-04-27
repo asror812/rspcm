@@ -4,27 +4,54 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import lombok.RequiredArgsConstructor;
+import org.example.rspcm.model.entity.User;
+import org.example.rspcm.repository.UserRepository;
+import org.example.rspcm.security.JwtService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+import java.util.Optional;
+
 @Configuration
+@RequiredArgsConstructor
 public class SwaggerConfig {
+
+    private final UserRepository userRepository;
+    private final JwtService jwtService;
 
     @Bean
     public OpenAPI openAPI() {
         String schemeName = "bearerAuth";
+
+        String adminToken = generateAdminToken();
+        String teacherToken = generateTeacherToken();
+
         return new OpenAPI()
                 .info(new Info()
                         .title("RSPCM API")
                         .version("v1")
                         .description("""
                                 ### Admin JWT token
+                                
                                 ```
-                                eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbkByc3BjbSIsImlhdCI6MTc3NjE4MDkzOSwiZXhwIjo3Mzc3NjE4MDkzO\
-                                Swicm9sZXMiOlsiRkFDVE9SX1BBU1NXT1JEIiwiQURNSU4iXX0.x5Tpbj1eLxQpS9fpaDyw76W4ErCZt0zL-CewxojlbTKEymfcogSJ5KaQJzBL7jfE
+                                %s
                                 ```
-                                """
+                                # Teacher JWT token
+                                
+                                ```
+                                %s
+                                ```
+                                
+                                """.formatted(adminToken, teacherToken))
+                )
+                .servers(List.of(
+                        new Server().url("http://localhost:8080").description("Local development server"),
+                        new Server().url("https://rspcm.uz").description("Production server")
                 ))
+
                 .addSecurityItem(new SecurityRequirement().addList(schemeName))
                 .schemaRequirement(
                         schemeName,
@@ -34,5 +61,15 @@ public class SwaggerConfig {
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
                 );
+    }
+
+    private String generateTeacherToken() {
+        Optional<User> existingUser = userRepository.findByEmail("math.teacher@rspcm.local");
+        return existingUser.map(jwtService::generateToken).orElse(null);
+    }
+
+    private String generateAdminToken() {
+        Optional<User> existingUser = userRepository.findByEmail("admin@rspcm.local");
+        return existingUser.map(jwtService::generateToken).orElse(null);
     }
 }

@@ -27,9 +27,9 @@ public class UserProfileSyncService {
                 .map(Role::getRoleName)
                 .collect(Collectors.toSet());
 
-        syncAdmin(user, roleNames.contains(RoleName.ADMIN));
-        syncTeacher(user, roleNames.contains(RoleName.TEACHER));
-        syncStudent(user, roleNames.contains(RoleName.STUDENT));
+        syncAdmin(user, roleNames.contains(RoleName.ROLE_ADMIN));
+        syncTeacher(user, roleNames.contains(RoleName.ROLE_TEACHER));
+        syncStudent(user, roleNames.contains(RoleName.ROLE_STUDENT));
     }
 
     private void syncAdmin(User user, boolean hasRole) {

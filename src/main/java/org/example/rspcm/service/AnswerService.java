@@ -39,6 +39,7 @@ public class AnswerService {
     @Transactional
     public Answer create(AnswerRequest request) {
         User student = currentUserService.getCurrentUser();
+
         Answer answer = Answer.builder()
                 .question(questionRepository.findById(request.questionId())
                         .orElseThrow(() -> new NotFoundException("Question topilmadi: " + request.questionId())))
@@ -49,6 +50,7 @@ public class AnswerService {
                 .selectedOption(request.selectedOption())
                 .submittedAt(LocalDateTime.now())
                 .build();
+
         return answerRepository.save(answer);
     }
 

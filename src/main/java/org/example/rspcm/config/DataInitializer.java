@@ -44,7 +44,12 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String @NonNull ... args) {
         Map<RoleName, Role> roles = Arrays.stream(RoleName.values())
                 .map(roleName -> 
-                    roleRepository.findByName(roleName).orElseGet(() -> roleRepository.save(Role.builder().name(roleName).build())))
+                    roleRepository.findByName(roleName)
+                            .orElseGet(() -> roleRepository.save(
+                                    Role.builder()
+                                            .name(roleName)
+                                            .build())))
+
                 .collect(Collectors.toMap(Role::getRoleName, role -> role));
 
         seedUsers(roles);
@@ -52,26 +57,26 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedUsers(Map<RoleName, Role> roles) {
-        createOrUpdateUser("admin@rspcm.local", "System Admin", "123", Set.of(RoleName.ADMIN), roles);
+        createOrUpdateUser("admin@rspcm.local", "System Admin", "123", Set.of(RoleName.ROLE_ADMIN), roles);
 
         // K1 group students (first five)
-        createOrUpdateUser("k1.anvar.rasulov@rspcm.local", "Anvar Rasulov", "123", Set.of(RoleName.STUDENT), roles);
-        createOrUpdateUser("k1.alisher.nazarov@rspcm.local", "Alisher Nazarov", "123", Set.of(RoleName.STUDENT), roles);
-        createOrUpdateUser("k1.axror.karimov@rspcm.local", "Axror Karimov", "123", Set.of(RoleName.STUDENT), roles);
-        createOrUpdateUser("k1.asror.abdullayeva@rspcm.local", "Asror Abdullayeva", "123", Set.of(RoleName.STUDENT), roles);
-        createOrUpdateUser("k1.abror.rahimov@rspcm.local", "Abror Rahimov", "123", Set.of(RoleName.STUDENT), roles);
+        createOrUpdateUser("k1.anvar.rasulov@rspcm.local", "Anvar Rasulov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
+        createOrUpdateUser("k1.alisher.nazarov@rspcm.local", "Alisher Nazarov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
+        createOrUpdateUser("k1.axror.karimov@rspcm.local", "Axror Karimov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
+        createOrUpdateUser("k1.asror.abdullayeva@rspcm.local", "Asror Abdullayeva", "123", Set.of(RoleName.ROLE_STUDENT), roles);
+        createOrUpdateUser("k1.abror.rahimov@rspcm.local", "Abror Rahimov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
 
         // L1 group students (second five)
-        createOrUpdateUser("l1.bahrom.rasulov@rspcm.local", "Bahrom Rasulov", "123", Set.of(RoleName.STUDENT), roles);
-        createOrUpdateUser("l1.bahodir.nazarov@rspcm.local", "Bahodir Nazarov", "123", Set.of(RoleName.STUDENT), roles);
-        createOrUpdateUser("l1.bobur.karimov@rspcm.local", "Bobur Karimov", "123", Set.of(RoleName.STUDENT), roles);
-        createOrUpdateUser("l1.botir.abdullayeva@rspcm.local", "Botir Abdullayeva", "123", Set.of(RoleName.STUDENT), roles);
-        createOrUpdateUser("l1.bekzod.rahimov@rspcm.local", "Bekzod Rahimov", "123", Set.of(RoleName.STUDENT), roles);
+        createOrUpdateUser("l1.bahrom.rasulov@rspcm.local", "Bahrom Rasulov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
+        createOrUpdateUser("l1.bahodir.nazarov@rspcm.local", "Bahodir Nazarov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
+        createOrUpdateUser("l1.bobur.karimov@rspcm.local", "Bobur Karimov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
+        createOrUpdateUser("l1.botir.abdullayeva@rspcm.local", "Botir Abdullayeva", "123", Set.of(RoleName.ROLE_STUDENT), roles);
+        createOrUpdateUser("l1.bekzod.rahimov@rspcm.local", "Bekzod Rahimov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
 
         // Subject teachers (three users)
-        createOrUpdateUser("math.teacher@rspcm.local", "Math Teacher", "123", Set.of(RoleName.TEACHER), roles);
-        createOrUpdateUser("physics.teacher@rspcm.local", "Physics Teacher", "123", Set.of(RoleName.TEACHER), roles);
-        createOrUpdateUser("programming.teacher@rspcm.local", "Programming Teacher", "123", Set.of(RoleName.TEACHER), roles);
+        createOrUpdateUser("math.teacher@rspcm.local", "Math Teacher", "123", Set.of(RoleName.ROLE_TEACHER), roles);
+        createOrUpdateUser("physics.teacher@rspcm.local", "Physics Teacher", "123", Set.of(RoleName.ROLE_TEACHER), roles);
+        createOrUpdateUser("programming.teacher@rspcm.local", "Programming Teacher", "123", Set.of(RoleName.ROLE_TEACHER), roles);
     }
 
     private void seedAcademicRelations() {

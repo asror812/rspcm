@@ -14,10 +14,8 @@ public final class PracticeMapper {
     }
 
     public static PracticeResponse toResponse(Practice practice) {
-        Set<GroupSummary> groups = practice.getGroups().stream().map(SummaryMapper::toGroupSummary).collect(Collectors.toSet());
-        Set<UserSummary> students = practice.getTargetStudents().stream().map(SummaryMapper::toUserSummary).collect(Collectors.toSet());
         UserSummary createdBy = SummaryMapper.toUserSummary(practice.getCreatedBy());
-        SubjectSummary subject = practice.getSubject() == null ? null : SummaryMapper.toSubjectSummary(practice.getSubject());
+
         return new PracticeResponse(
                 practice.getId(),
                 practice.getName(),
@@ -28,10 +26,7 @@ public final class PracticeMapper {
                 practice.getWorkMode(),
                 practice.getTeamSize(),
                 practice.isCalendarRequired(),
-                groups,
-                students,
-                createdBy,
-                subject
+                createdBy
         );
     }
 }

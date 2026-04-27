@@ -24,10 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -136,5 +133,9 @@ public class StudyGroupService {
         return studentProfileRepository.findByStudentNumber(value)
                 .map(StudentProfile::getUser)
                 .orElse(null);
+    }
+
+    public List<StudyGroup> findOwnGroups(User user) {
+        return groupRepository.findByTeachersId(user.getId());
     }
 }

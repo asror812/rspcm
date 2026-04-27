@@ -69,7 +69,7 @@ public class ProfileController {
     }
 
     @GetMapping("/teachers/me")
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ROLE_TEACHER')")
     public ResponseEntity<TeacherProfileResponse> myTeacherProfile() {
         Long userId = currentUserService.getCurrentUser().getId();
         return ResponseEntity.ok(TeacherProfileMapper.toResponse(profileService.getTeacherProfile(userId)));

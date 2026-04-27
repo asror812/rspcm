@@ -1,7 +1,5 @@
 package org.example.rspcm.dto.question;
 
-import org.example.rspcm.dto.common.ExamSummary;
-import org.example.rspcm.dto.common.PracticeSummary;
 import org.example.rspcm.model.enums.QuestionType;
 
 public record QuestionResponse(
@@ -10,8 +8,6 @@ public record QuestionResponse(
         QuestionType type,
         String optionsJson,
         String correctAnswer,
-        Integer maxScore,
-        ExamSummary exam,
-        PracticeSummary practice
+        Integer maxScore
 ) {
 }

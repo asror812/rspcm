@@ -14,9 +14,7 @@ public final class QuestionMapper {
                 question.getType(),
                 question.getOptionsJson(),
                 question.getCorrectAnswer(),
-                question.getMaxScore(),
-                question.getExam() == null ? null : SummaryMapper.toExamSummary(question.getExam()),
-                question.getPractice() == null ? null : SummaryMapper.toPracticeSummary(question.getPractice())
+                question.getMaxScore()
         );
     }
 }

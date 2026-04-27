@@ -11,7 +11,6 @@ import org.example.rspcm.model.enums.WorkMode;
 import org.example.rspcm.repository.UserRepository;
 import org.example.rspcm.repository.PracticeRepository;
 import org.example.rspcm.repository.StudyGroupRepository;
-import org.example.rspcm.repository.SubjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +25,6 @@ public class PracticeService {
 
     private final PracticeRepository practiceRepository;
     private final StudyGroupRepository groupRepository;
-    private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
 
@@ -50,11 +48,7 @@ public class PracticeService {
                 .workMode(request.workMode())
                 .teamSize(request.teamSize())
                 .calendarRequired(request.calendarRequired())
-                .groups(resolveGroups(request.groupIds()))
-                .targetStudents(resolveStudents(request.studentIds()))
                 .createdBy(currentUserService.getCurrentUser())
-                .subject(request.subjectId() == null ? null : subjectRepository.findById(request.subjectId())
-                        .orElseThrow(() -> new NotFoundException("Subject topilmadi: " + request.subjectId())))
                 .build();
         return practiceRepository.save(practice);
     }
@@ -71,17 +65,12 @@ public class PracticeService {
         practice.setWorkMode(request.workMode());
         practice.setTeamSize(request.teamSize());
         practice.setCalendarRequired(request.calendarRequired());
-        practice.setGroups(resolveGroups(request.groupIds()));
-        practice.setTargetStudents(resolveStudents(request.studentIds()));
-        practice.setSubject(request.subjectId() == null ? null : subjectRepository.findById(request.subjectId())
-                .orElseThrow(() -> new NotFoundException("Subject topilmadi: " + request.subjectId())));
         return practiceRepository.save(practice);
     }
 
     @Transactional
     public Practice assignGroups(Long practiceId, Set<Long> groupIds) {
         Practice practice = findById(practiceId);
-        practice.setGroups(resolveGroups(groupIds));
         return practiceRepository.save(practice);
     }
 

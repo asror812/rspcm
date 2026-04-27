@@ -43,14 +43,4 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
-
-    @PostMapping("/swagger-admin-token")
-    public ResponseEntity<AuthResponse> swaggerAdminToken() {
-        return ResponseEntity.ok(authService.issueSwaggerAdminToken());
-    }
-
-    @PostMapping("/swagger-panel-token")
-    public ResponseEntity<Map<String, String>> swaggerPanelToken() {
-        return ResponseEntity.ok(Map.of("token", authService.resolveSwaggerPanelToken()));
-    }
 }

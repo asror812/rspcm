@@ -6,6 +6,5 @@ public enum QuestionType {
     MULTIPLE_CHOICE,
     PRACTICAL,
     URL,
-    FILE_UPLOAD,
-    TEXT
+    FILE_UPLOAD
 }

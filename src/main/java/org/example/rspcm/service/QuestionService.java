@@ -5,8 +5,6 @@ import org.example.rspcm.exception.ErrorCodes;
 import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.Question;
-import org.example.rspcm.repository.ExamRepository;
-import org.example.rspcm.repository.PracticeRepository;
 import org.example.rspcm.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,8 +17,6 @@ import java.util.List;
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
-    private final ExamRepository examRepository;
-    private final PracticeRepository practiceRepository;
 
     public List<Question> findAll() {
         return questionRepository.findAll();
@@ -32,34 +28,26 @@ public class QuestionService {
 
     @Transactional
     public Question create(QuestionRequest request) {
-        validateOwner(request.examId(), request.practiceId());
         Question question = Question.builder()
                 .text(request.text())
                 .type(request.type())
                 .optionsJson(request.optionsJson())
                 .correctAnswer(request.correctAnswer())
                 .maxScore(request.maxScore())
-                .exam(request.examId() == null ? null : examRepository.findById(request.examId())
-                        .orElseThrow(() -> new NotFoundException("Exam topilmadi: " + request.examId())))
-                .practice(request.practiceId() == null ? null : practiceRepository.findById(request.practiceId())
-                        .orElseThrow(() -> new NotFoundException("Practice topilmadi: " + request.practiceId())))
                 .build();
+
         return questionRepository.save(question);
     }
 
     @Transactional
     public Question update(Long id, QuestionRequest request) {
-        validateOwner(request.examId(), request.practiceId());
         Question question = findById(id);
         question.setText(request.text());
         question.setType(request.type());
         question.setOptionsJson(request.optionsJson());
         question.setCorrectAnswer(request.correctAnswer());
         question.setMaxScore(request.maxScore());
-        question.setExam(request.examId() == null ? null : examRepository.findById(request.examId())
-                .orElseThrow(() -> new NotFoundException("Exam topilmadi: " + request.examId())));
-        question.setPractice(request.practiceId() == null ? null : practiceRepository.findById(request.practiceId())
-                .orElseThrow(() -> new NotFoundException("Practice topilmadi: " + request.practiceId())));
+
         return questionRepository.save(question);
     }
 
@@ -67,11 +55,5 @@ public class QuestionService {
     public void delete(Long id) {
         Question question = findById(id);
         questionRepository.delete(question);
-    }
-
-    private void validateOwner(Long examId, Long practiceId) {
-        if ((examId == null && practiceId == null) || (examId != null && practiceId != null)) {
-            throw new ErrorMessageException("Question faqat exam yoki practice bilan bog'lanishi kerak", ErrorCodes.BadRequest);
-        }
     }
 }

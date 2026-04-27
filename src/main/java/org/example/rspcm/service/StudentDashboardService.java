@@ -1,9 +1,6 @@
 package org.example.rspcm.service;
 
-import org.example.rspcm.dto.student.StudentDashboardResponse;
 import org.example.rspcm.dto.student.StudentTaskItem;
-import org.example.rspcm.mapper.SubjectMapper;
-import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.Exam;
 import org.example.rspcm.model.entity.Practice;
 import org.example.rspcm.repository.ExamRepository;
@@ -21,7 +18,7 @@ public class StudentDashboardService {
     private final PracticeRepository practiceRepository;
     private final ExamRepository examRepository;
 
-    public StudentDashboardResponse getMyDashboard() {
+/*    public StudentDashboardResponse getMyDashboard() {
         User student = currentUserService.getCurrentUser();
 
         return new StudentDashboardResponse(
@@ -33,7 +30,7 @@ public class StudentDashboardService {
                         .map(this::toExamTask)
                         .toList()
         );
-    }
+    }*/
 
     private StudentTaskItem toPracticeTask(Practice practice) {
         return new StudentTaskItem(practice.getId(), practice.getName(), practice.getDeadline(), "PRACTICE");

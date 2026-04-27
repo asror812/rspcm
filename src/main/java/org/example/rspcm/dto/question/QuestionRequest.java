@@ -10,7 +10,6 @@ public record QuestionRequest(
         String optionsJson,
         String correctAnswer,
         Integer maxScore,
-        Long examId,
-        Long practiceId
+        Long examId
 ) {
 }
