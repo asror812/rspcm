@@ -1,5 +1,4 @@
 name: Build and Deploy to Server
-
 on:
   push:
     branches: [ "main" ]
@@ -7,7 +6,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,32 +16,31 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
+          cache-dependency-path: 'pom.xml'
 
-      # Build the JAR
       - name: Build with Maven
         run: |
           mvn dependency:go-offline --no-transfer-progress
           mvn clean package -DskipTests --no-transfer-progress
 
-      # Copy JAR to Server using SCP
       - name: Copy JAR to Server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SERVER_HOST }}
+          host: ${{ secrets.SERVER_HOST }}      # ✅ consistent name
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "target/my-app-1.0.0.jar"
-          target: "/opt/backend/app.jar"
+          target: "/opt/backend/"               # ✅ directory, not file
           strip_components: 1
 
-      # SSH into server and restart the service
       - name: Restart Systemd Service
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_IP }}
+          host: ${{ secrets.SERVER_HOST }}      # ✅ consistent name
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            mv /opt/backend/my-app-1.0.0.jar /opt/backend/app.jar
             sudo systemctl restart api.rspcm.service
             sleep 15
             sudo systemctl status api.rspcm.service
