@@ -1,6 +1,5 @@
 package org.example.rspcm.service;
 
-import jakarta.validation.Valid;
 import org.example.rspcm.config.AppProperties;
 import org.example.rspcm.dto.auth.AuthResponse;
 import org.example.rspcm.dto.auth.LoginRequest;

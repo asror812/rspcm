@@ -1,6 +1,5 @@
 package org.example.rspcm.controller;
 
-import com.sun.security.auth.UserPrincipal;
 import org.example.rspcm.dto.auth.AuthResponse;
 import org.example.rspcm.dto.auth.LoginRequest;
 import org.example.rspcm.dto.auth.RegisterRequest;

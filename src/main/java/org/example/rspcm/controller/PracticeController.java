@@ -1,6 +1,5 @@
 package org.example.rspcm.controller;
 
-import org.example.rspcm.dto.practice.PracticeAssignGroupsRequest;
 import org.example.rspcm.dto.practice.PracticeRequest;
 import org.example.rspcm.dto.practice.PracticeResponse;
 import org.example.rspcm.mapper.PracticeMapper;
@@ -55,7 +54,7 @@ public class PracticeController {
 
     @PatchMapping("/{id}/assign-groups")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public ResponseEntity<PracticeResponse> assignGroups(@PathVariable Long id, @Valid @RequestBody PracticeAssignGroupsRequest request) {
+    public ResponseEntity<PracticeResponse> assignGroups(@PathVariable Long id) {
         return ResponseEntity.ok(PracticeMapper.toResponse(practiceService.assignGroups(id)));
     }
 

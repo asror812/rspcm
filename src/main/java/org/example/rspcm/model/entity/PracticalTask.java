@@ -1,6 +1,5 @@
 package org.example.rspcm.model.entity;
 
-import org.example.rspcm.model.enums.PracticalTaskType;
 import org.example.rspcm.model.enums.WorkMode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
