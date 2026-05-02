@@ -35,12 +35,6 @@ public class AnswerController {
         return ResponseEntity.ok(answerService.findAll().stream().map(AnswerMapper::toResponse).toList());
     }
 
-    @GetMapping("/me")
-    @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<AnswerResponse>> myAnswers() {
-        return ResponseEntity.ok(answerService.findMine().stream().map(AnswerMapper::toResponse).toList());
-    }
-
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
     public ResponseEntity<AnswerResponse> getById(@PathVariable Long id) {
@@ -48,15 +42,15 @@ public class AnswerController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
     public ResponseEntity<AnswerResponse> create(@Valid @RequestBody AnswerRequest request) {
         return ResponseEntity.ok(AnswerMapper.toResponse(answerService.create(request)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<AnswerResponse> updateMine(@PathVariable Long id, @Valid @RequestBody AnswerRequest request) {
-        return ResponseEntity.ok(AnswerMapper.toResponse(answerService.updateMine(id, request)));
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
+    public ResponseEntity<AnswerResponse> update(@PathVariable Long id, @Valid @RequestBody AnswerRequest request) {
+        return ResponseEntity.ok(AnswerMapper.toResponse(answerService.update(id, request)));
     }
 
     @PatchMapping("/{id}/score")
@@ -66,9 +60,9 @@ public class AnswerController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<Void> deleteMine(@PathVariable Long id) {
-        answerService.deleteMine(id);
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        answerService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

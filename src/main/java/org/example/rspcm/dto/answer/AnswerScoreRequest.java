@@ -4,6 +4,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record AnswerScoreRequest(
         @NotNull Integer score,
-        String feedback
+        Boolean correct
 ) {
 }

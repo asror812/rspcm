@@ -13,6 +13,6 @@ public final class PracticeTeamMapper {
 
     public static PracticeTeamResponse toResponse(PracticeTeam team) {
         Set<UserSummary> members = team.getMembers().stream().map(SummaryMapper::toUserSummary).collect(Collectors.toSet());
-        return new PracticeTeamResponse(team.getId(), SummaryMapper.toPracticeSummary(team.getPractice()), team.getName(), members);
+        return new PracticeTeamResponse(team.getId(), SummaryMapper.toPracticeSummary(team.getPracticalTask()), team.getName(), members);
     }
 }

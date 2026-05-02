@@ -1,31 +1,26 @@
 package org.example.rspcm.mapper;
 
-import org.example.rspcm.dto.common.GroupSummary;
-import org.example.rspcm.dto.common.SubjectSummary;
 import org.example.rspcm.dto.common.UserSummary;
 import org.example.rspcm.dto.practice.PracticeResponse;
-import org.example.rspcm.model.entity.Practice;
-
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.example.rspcm.model.entity.PracticalTask;
 
 public final class PracticeMapper {
     private PracticeMapper() {
     }
 
-    public static PracticeResponse toResponse(Practice practice) {
-        UserSummary createdBy = SummaryMapper.toUserSummary(practice.getCreatedBy());
+    public static PracticeResponse toResponse(PracticalTask practicalTask) {
+        UserSummary createdBy = SummaryMapper.toUserSummary(practicalTask.getCreatedBy());
 
         return new PracticeResponse(
-                practice.getId(),
-                practice.getName(),
-                practice.getDescription(),
-                practice.getResourceUrl(),
-                practice.getRequirements(),
-                practice.getDeadline(),
-                practice.getWorkMode(),
-                practice.getTeamSize(),
-                practice.isCalendarRequired(),
+                practicalTask.getId(),
+                practicalTask.getName(),
+                practicalTask.getDescription(),
+                practicalTask.getResourceUrl(),
+                practicalTask.getRequirements(),
+                practicalTask.getDeadline(),
+                practicalTask.getWorkMode(),
+                practicalTask.getTeamSize(),
+                practicalTask.isSchedulingRequired(),
                 createdBy
         );
     }

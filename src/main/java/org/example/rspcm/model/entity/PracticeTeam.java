@@ -37,8 +37,8 @@ public class PracticeTeam {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "practice_id")
-    private Practice practice;
+    @JoinColumn(name = "practical_task_id")
+    private PracticalTask practicalTask;
 
     @Builder.Default
     @ManyToMany

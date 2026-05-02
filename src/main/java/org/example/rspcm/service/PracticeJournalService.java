@@ -4,10 +4,7 @@ import org.example.rspcm.dto.practice.PracticeJournalRequest;
 import org.example.rspcm.exception.ErrorCodes;
 import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
-import org.example.rspcm.model.entity.User;
-import org.example.rspcm.model.entity.Practice;
-import org.example.rspcm.model.entity.PracticeJournal;
-import org.example.rspcm.model.entity.PracticeTeam;
+import org.example.rspcm.model.entity.*;
 import org.example.rspcm.repository.PracticeJournalRepository;
 import org.example.rspcm.repository.PracticeRepository;
 import org.example.rspcm.repository.PracticeTeamRepository;
@@ -27,34 +24,34 @@ public class PracticeJournalService {
     private final PracticeTeamRepository teamRepository;
     private final CurrentUserService currentUserService;
 
-    public List<PracticeJournal> findMine() {
+    public List<PracticeLogbook> findMine() {
         User student = currentUserService.getCurrentUser();
         return journalRepository.findByStudentId(student.getId());
     }
 
-    public List<PracticeJournal> findByPractice(Long practiceId) {
-        return journalRepository.findByPracticeId(practiceId);
+    public List<PracticeLogbook> findByPracticalTask(Long practicalTaskId) {
+        return journalRepository.findByPracticalTaskId(practicalTaskId);
     }
 
     @Transactional
-    public PracticeJournal submit(PracticeJournalRequest request) {
+    public PracticeLogbook submit(PracticeJournalRequest request) {
         User student = currentUserService.getCurrentUser();
-        Practice practice = practiceRepository.findById(request.practiceId())
-                .orElseThrow(() -> new NotFoundException("Practice topilmadi: " + request.practiceId()));
+        PracticalTask practicalTask = practiceRepository.findById(request.practiceId())
+                .orElseThrow(() -> new NotFoundException("PracticalTask topilmadi: " + request.practiceId()));
 
-        if (practice.isCalendarRequired()
+        if (practicalTask.isSchedulingRequired()
                 && (isBlank(request.calendarText()) && isBlank(request.calendarFilePath()))) {
-            throw new ErrorMessageException("Bu practice uchun calendar to'ldirish majburiy", ErrorCodes.BadRequest);
+            throw new ErrorMessageException("Bu practicalTask uchun calendar to'ldirish majburiy", ErrorCodes.BadRequest);
         }
 
         PracticeTeam team = null;
         if (request.teamId() != null) {
             team = teamRepository.findById(request.teamId())
-                    .orElseThrow(() -> new NotFoundException("Practice team topilmadi: " + request.teamId()));
+                    .orElseThrow(() -> new NotFoundException("PracticalTask team topilmadi: " + request.teamId()));
         }
 
-        PracticeJournal journal = PracticeJournal.builder()
-                .practice(practice)
+        PracticeLogbook journal = PracticeLogbook.builder()
+                .practicalTask(practicalTask)
                 .student(student)
                 .team(team)
                 .content(request.content())

@@ -23,35 +23,34 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "answers")
-public class Answer {
+@Table(name = "practice_journals")
+public class PracticeLogbook {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "question_id")
-    private Question question;
+    @JoinColumn(name = "practice_id")
+    private PracticalTask practicalTask;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id")
     private User student;
 
-    @Column(length = 4000)
-    private String answerText;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private PracticeTeam team;
 
-    private String answerUrl;
+    @Column(length = 5000)
+    private String content;
 
     private String filePath;
 
-    @Column(length = 512)
-    private String selectedOption;
+    @Column(length = 4000)
+    private String calendarText;
 
-    private Integer score;
-
-    @Column(length = 2000)
-    private String feedback;
+    private String calendarFilePath;
 
     private LocalDateTime submittedAt;
 }

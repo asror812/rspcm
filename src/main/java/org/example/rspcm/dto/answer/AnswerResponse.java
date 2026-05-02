@@ -1,20 +1,17 @@
 package org.example.rspcm.dto.answer;
 
 import org.example.rspcm.dto.common.QuestionSummary;
-import org.example.rspcm.dto.common.UserSummary;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record AnswerResponse(
         Long id,
         QuestionSummary question,
-        UserSummary student,
-        String answerText,
-        String answerUrl,
-        String filePath,
-        String selectedOption,
+        String textAnswer,
+        List<Long> selectedOptionIds,
         Integer score,
-        String feedback,
-        LocalDateTime submittedAt
+        Boolean correct,
+        LocalDateTime answeredAt
 ) {
 }

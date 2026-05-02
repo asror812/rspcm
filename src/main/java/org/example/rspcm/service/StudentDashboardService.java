@@ -2,7 +2,7 @@ package org.example.rspcm.service;
 
 import org.example.rspcm.dto.student.StudentTaskItem;
 import org.example.rspcm.model.entity.Exam;
-import org.example.rspcm.model.entity.Practice;
+import org.example.rspcm.model.entity.PracticalTask;
 import org.example.rspcm.repository.ExamRepository;
 import org.example.rspcm.repository.PracticeRepository;
 import org.example.rspcm.repository.SubjectRepository;
@@ -32,8 +32,8 @@ public class StudentDashboardService {
         );
     }*/
 
-    private StudentTaskItem toPracticeTask(Practice practice) {
-        return new StudentTaskItem(practice.getId(), practice.getName(), practice.getDeadline(), "PRACTICE");
+    private StudentTaskItem toPracticeTask(PracticalTask practicalTask) {
+        return new StudentTaskItem(practicalTask.getId(), practicalTask.getName(), practicalTask.getDeadline(), "PRACTICE");
     }
 
     private StudentTaskItem toExamTask(Exam exam) {

@@ -1,6 +1,5 @@
 package org.example.rspcm.controller;
 
-import org.example.rspcm.dto.practice.PracticeAssignGroupsRequest;
 import org.example.rspcm.dto.practice.PracticeRequest;
 import org.example.rspcm.dto.practice.PracticeResponse;
 import org.example.rspcm.mapper.PracticeMapper;
@@ -24,7 +23,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/practices")
+@RequestMapping({"/api/practices", "/api/practical-tasks"})
 public class PracticeController {
 
     private final PracticeService practiceService;
@@ -55,8 +54,8 @@ public class PracticeController {
 
     @PatchMapping("/{id}/assign-groups")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public ResponseEntity<PracticeResponse> assignGroups(@PathVariable Long id, @Valid @RequestBody PracticeAssignGroupsRequest request) {
-        return ResponseEntity.ok(PracticeMapper.toResponse(practiceService.assignGroups(id, request.groupIds())));
+    public ResponseEntity<PracticeResponse> assignGroups(@PathVariable Long id) {
+        return ResponseEntity.ok(PracticeMapper.toResponse(practiceService.assignGroups(id)));
     }
 
     @DeleteMapping("/{id}")
