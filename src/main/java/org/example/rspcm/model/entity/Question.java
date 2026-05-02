@@ -30,14 +30,7 @@ public class Question {
     @Column(nullable = false)
     private QuestionType type;
 
-    @Column(length = 4000)
-    private String optionsJson;
-
-    @Column(length = 2000)
-    private String correctAnswer;
-
-    private Integer maxScore;
-
-    @ManyToMany(mappedBy = "questions")
-    private List<Exam> exams;
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("orderIndex ASC")
+    private List<QuestionOption> options;
 }

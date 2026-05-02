@@ -15,7 +15,7 @@ public record PracticeRequest(
         LocalDateTime deadline,
         @NotNull WorkMode workMode,
         Integer teamSize,
-        boolean calendarRequired,
+        boolean schedulingRequired,
         Set<Long> groupIds,
         Set<Long> studentIds,
         Long subjectId

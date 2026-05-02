@@ -1,13 +1,16 @@
 package org.example.rspcm.service;
 
+import jakarta.validation.Valid;
 import org.example.rspcm.config.AppProperties;
 import org.example.rspcm.dto.auth.AuthResponse;
 import org.example.rspcm.dto.auth.LoginRequest;
 import org.example.rspcm.dto.auth.RegisterRequest;
 import org.example.rspcm.dto.auth.VerifyOtpRequest;
+import org.example.rspcm.dto.user.UserResponse;
 import org.example.rspcm.exception.ErrorCodes;
 import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
+import org.example.rspcm.model.entity.Role;
 import org.example.rspcm.model.entity.User;
 import org.example.rspcm.model.entity.OtpVerification;
 import org.example.rspcm.repository.OtpVerificationRepository;
@@ -133,5 +136,17 @@ public class AuthService {
 
         otpRepository.save(otp);
         mailService.sendOtp(email, code);
+    }
+
+    public UserResponse getUser(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.isEnabled(),
+                user.isDeleted(),
+                user.getRoles().stream().map(Role::getName).collect(Collectors.toSet())
+        );
     }
 }

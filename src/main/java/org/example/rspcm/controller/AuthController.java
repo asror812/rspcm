@@ -1,19 +1,20 @@
 package org.example.rspcm.controller;
 
+import com.sun.security.auth.UserPrincipal;
 import org.example.rspcm.dto.auth.AuthResponse;
 import org.example.rspcm.dto.auth.LoginRequest;
 import org.example.rspcm.dto.auth.RegisterRequest;
 import org.example.rspcm.dto.auth.ResendOtpRequest;
 import org.example.rspcm.dto.auth.VerifyOtpRequest;
+import org.example.rspcm.dto.user.UserResponse;
+import org.example.rspcm.model.entity.User;
 import org.example.rspcm.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -23,6 +24,11 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+
+    @GetMapping
+    public ResponseEntity<UserResponse> getUser(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(authService.getUser(user));
+    }
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {

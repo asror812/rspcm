@@ -4,12 +4,11 @@ import org.example.rspcm.model.enums.QuestionType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.List;
+
 public record QuestionRequest(
         @NotBlank String text,
         @NotNull QuestionType type,
-        String optionsJson,
-        String correctAnswer,
-        Integer maxScore,
-        Long examId
+        List<QuestionOptionRequest> options
 ) {
 }

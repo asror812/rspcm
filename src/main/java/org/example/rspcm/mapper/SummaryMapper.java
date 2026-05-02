@@ -7,13 +7,7 @@ import org.example.rspcm.dto.common.PracticeTeamSummary;
 import org.example.rspcm.dto.common.QuestionSummary;
 import org.example.rspcm.dto.common.SubjectSummary;
 import org.example.rspcm.dto.common.UserSummary;
-import org.example.rspcm.model.entity.Exam;
-import org.example.rspcm.model.entity.Practice;
-import org.example.rspcm.model.entity.PracticeTeam;
-import org.example.rspcm.model.entity.Question;
-import org.example.rspcm.model.entity.StudyGroup;
-import org.example.rspcm.model.entity.Subject;
-import org.example.rspcm.model.entity.User;
+import org.example.rspcm.model.entity.*;
 
 public final class SummaryMapper {
     private SummaryMapper() {
@@ -31,8 +25,8 @@ public final class SummaryMapper {
         return new GroupSummary(group.getId(), group.getName(), group.getLanguage());
     }
 
-    public static PracticeSummary toPracticeSummary(Practice practice) {
-        return new PracticeSummary(practice.getId(), practice.getName(), practice.getDeadline());
+    public static PracticeSummary toPracticeSummary(PracticalTask practicalTask) {
+        return new PracticeSummary(practicalTask.getId(), practicalTask.getName(), practicalTask.getDeadline());
     }
 
     public static ExamSummary toExamSummary(Exam exam) {
@@ -40,7 +34,7 @@ public final class SummaryMapper {
     }
 
     public static QuestionSummary toQuestionSummary(Question question) {
-        return new QuestionSummary(question.getId(), question.getText(), question.getType(), question.getMaxScore());
+        return new QuestionSummary(question.getId(), question.getText(), question.getType());
     }
 
     public static PracticeTeamSummary toPracticeTeamSummary(PracticeTeam team) {

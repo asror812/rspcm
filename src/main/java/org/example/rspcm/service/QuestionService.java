@@ -1,15 +1,15 @@
 package org.example.rspcm.service;
 
 import org.example.rspcm.dto.question.QuestionRequest;
-import org.example.rspcm.exception.ErrorCodes;
-import org.example.rspcm.exception.ErrorMessageException;
 import org.example.rspcm.exception.NotFoundException;
 import org.example.rspcm.model.entity.Question;
+import org.example.rspcm.model.entity.QuestionOption;
 import org.example.rspcm.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,10 +31,9 @@ public class QuestionService {
         Question question = Question.builder()
                 .text(request.text())
                 .type(request.type())
-                .optionsJson(request.optionsJson())
-                .correctAnswer(request.correctAnswer())
-                .maxScore(request.maxScore())
+                .options(new ArrayList<>())
                 .build();
+        applyOptions(question, request);
 
         return questionRepository.save(question);
     }
@@ -44,10 +43,7 @@ public class QuestionService {
         Question question = findById(id);
         question.setText(request.text());
         question.setType(request.type());
-        question.setOptionsJson(request.optionsJson());
-        question.setCorrectAnswer(request.correctAnswer());
-        question.setMaxScore(request.maxScore());
-
+        applyOptions(question, request);
         return questionRepository.save(question);
     }
 
@@ -55,5 +51,22 @@ public class QuestionService {
     public void delete(Long id) {
         Question question = findById(id);
         questionRepository.delete(question);
+    }
+
+    private void applyOptions(Question question, QuestionRequest request) {
+        question.getOptions().clear();
+        if (request.options() == null || request.options().isEmpty()) {
+            return;
+        }
+        int i = 0;
+        for (var optionRequest : request.options()) {
+            QuestionOption option = new QuestionOption();
+            option.setQuestion(question);
+            option.setText(optionRequest.text());
+            option.setCorrect(optionRequest.correct());
+            option.setOrderIndex(optionRequest.orderIndex() == null ? i : optionRequest.orderIndex());
+            question.getOptions().add(option);
+            i++;
+        }
     }
 }

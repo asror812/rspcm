@@ -10,6 +10,4 @@ import java.util.List;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
-    @Query("select q from Question q join q.exams e where e.id = :examId")
-    List<Question> findQuestionsByExamId(Long examId);
 }

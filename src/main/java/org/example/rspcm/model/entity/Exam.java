@@ -9,7 +9,9 @@ import lombok.Setter;
 import org.example.rspcm.model.enums.ExamType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -42,20 +44,17 @@ public class Exam {
     private ExamType type;
 
     @Builder.Default
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "exam_questions",
-            joinColumns = @JoinColumn(name = "exam_id"),
-            inverseJoinColumns = @JoinColumn(name = "question_id")
-    )
-    private Set<Question> questions = new HashSet<>();
+    @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL)
+    @OrderBy("orderIndex asc")
+    private List<ExamQuestion> questions = new ArrayList<>();
 
     @Builder.Default
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "exam_practices",
             joinColumns = @JoinColumn(name = "exam_id"),
-            inverseJoinColumns = @JoinColumn(name = "practice_id")
+            inverseJoinColumns = @JoinColumn(name = "practical_task_id")
     )
-    private Set<Practice> practices = new HashSet<>();
+    private Set<PracticalTask> practicalTasks = new HashSet<>();
 
     @Builder.Default
     @ManyToMany(fetch = FetchType.LAZY)

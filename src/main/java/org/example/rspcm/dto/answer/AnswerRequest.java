@@ -2,11 +2,11 @@ package org.example.rspcm.dto.answer;
 
 import jakarta.validation.constraints.NotNull;
 
+import java.util.List;
+
 public record AnswerRequest(
-        @NotNull Long questionId,
-        String answerText,
-        String answerUrl,
-        String filePath,
-        String selectedOption
+        @NotNull Long examQuestionId,
+        String textAnswer,
+        List<Long> selectedOptionIds
 ) {
 }

@@ -2,5 +2,5 @@ package org.example.rspcm.model.enums;
 
 public enum ExamType {
     QUESTION,
-    PRACTISE
+    PRACTICAL_TASK
 }

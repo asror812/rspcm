@@ -1,5 +1,6 @@
 package org.example.rspcm.model.entity;
 
+import org.example.rspcm.model.enums.PracticalTaskType;
 import org.example.rspcm.model.enums.WorkMode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +21,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -28,8 +29,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "practices")
-public class Practice {
+@Table(name = "practical_tasks")
+public class PracticalTask {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,13 +53,17 @@ public class Practice {
     @Column(nullable = false)
     private WorkMode workMode;
 
+    private boolean allowsFileUpload;
+    private boolean allowsLinkSubmission;
+    private boolean allowsCodeEditor;
+
     private Integer teamSize;
 
     @Column(nullable = false)
-    private boolean calendarRequired;
+    private boolean schedulingRequired;
 
-    @ManyToMany(mappedBy = "practices")
-    private List<Exam> exams;
+    @ManyToMany(mappedBy = "practicalTasks")
+    private Set<Exam> exams;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by")
