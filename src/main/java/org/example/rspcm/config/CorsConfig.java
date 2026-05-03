@@ -19,11 +19,11 @@ public class CorsConfig {
                 List.of(
                         "http://localhost:3000",
                         "http://localhost:5173",
-                        "http://localhost:8080",
-                        "https://rspcm.com"
+                        "https://rspcm.com",
+                        "https://rspcm.uz"
                 ));
 
-        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

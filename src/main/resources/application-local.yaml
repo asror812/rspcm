@@ -3,9 +3,9 @@ server:
   
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/rspcm}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:123}
+    url: jdbc:postgresql://localhost:5432/rspcm
+    username: postgres
+    password: 123
 
   jpa:
     hibernate:
@@ -17,10 +17,10 @@ spring:
     open-in-view: true
 
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:asror0812@gmail.com}
-    password: ${MAIL_PASSWORD:mknb upzz zcxw fnzw}
+    host: smtp.gmail.com
+    port: 587
+    username: asror0812@gmail.com
+    password: mknb upzz zcxw fnzw
 
     properties:
       mail:
