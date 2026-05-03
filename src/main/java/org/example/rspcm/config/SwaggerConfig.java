@@ -1,5 +1,6 @@
 package org.example.rspcm.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -35,12 +36,11 @@ public class SwaggerConfig {
                         .version("v1")
                         .description("""
                                 ### Admin JWT token
-                                
                                 ```
                                 %s
                                 ```
-                                # Teacher JWT token
                                 
+                                # Teacher JWT token
                                 ```
                                 %s
                                 ```
@@ -48,19 +48,19 @@ public class SwaggerConfig {
                                 """.formatted(adminToken, teacherToken))
                 )
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Local development server"),
-                        new Server().url("https://rspcm.uz").description("Production server")
+                        new Server().url("https://api.rspcm.uz").description("Production server"),
+                        new Server().url("http://localhost:8080").description("Local development server")
                 ))
 
                 .addSecurityItem(new SecurityRequirement().addList(schemeName))
-                .schemaRequirement(
-                        schemeName,
-                        new SecurityScheme()
-                                .name(schemeName)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")
-                );
+                .components(new Components()
+                        .addSecuritySchemes(
+                                schemeName,
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                        ));
     }
 
     private String generateTeacherToken() {
