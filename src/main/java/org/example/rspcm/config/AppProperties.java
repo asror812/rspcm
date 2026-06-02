@@ -16,6 +16,8 @@ public class AppProperties {
     private Mail mail = new Mail();
     private Admin admin = new Admin();
     private Swagger swagger = new Swagger();
+    private String uploadDir;
+    private Firebase firebase = new Firebase();
 
     @Getter
     @Setter
@@ -50,4 +52,11 @@ public class AppProperties {
     public static class Swagger {
         private String panelToken;
     }
+
+    @Getter
+    @Setter
+    public static class Firebase {
+        private String credentialsPath;
+    }
+
 }

@@ -36,8 +36,37 @@ Important env vars:
 - `INMEMORY_ADMIN_USERNAME`
 - `INMEMORY_ADMIN_PASSWORD`
 - `INMEMORY_ADMIN_FULL_NAME`
+- `APP_UPLOAD_DIR`
 
 Also configure datasource and mail settings in your active profile file (`application-local.yaml` for local development).
+
+Firebase credentials:
+
+- Local development:
+  - `app.firebase.credentials-path=src/main/resources/firebase-service-account.json`
+- Production:
+  - `app.firebase.credentials-path=/opt/backend/firebase-service-account.json`
+  - Expected layout:
+    - `/opt/backend/app.jar`
+    - `/opt/backend/firebase-service-account.json`
+
+## File Upload Storage
+
+- Local development:
+  - `app.upload-dir=uploads`
+  - Files are stored under:
+    - `uploads/chats/`
+    - `uploads/groups/`
+    - `uploads/users/`
+
+- Production:
+  - `app.upload-dir=/opt/backend/uploads` (or `/var/app/uploads`)
+  - Keep uploads outside the JAR directory so redeploying `app.jar` does not remove uploaded files.
+  - App auto-creates:
+    - `uploads/chats/`
+    - `uploads/groups/`
+    - `uploads/users/`
+    - `uploads/images/`
 
 ## Run Locally
 

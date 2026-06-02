@@ -1,5 +1,6 @@
 package org.example.rspcm.service;
 
+import org.example.rspcm.dto.common.UserSummary;
 import org.example.rspcm.dto.group.AdminGroupResponse;
 import org.example.rspcm.dto.group.GroupRequest;
 import org.example.rspcm.dto.group.GroupResponse;
@@ -39,17 +40,18 @@ public class StudyGroupService {
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final GroupMapper groupMapper;
+    private final GroupChatSyncService groupChatSyncService;
 
     public Page<AdminGroupResponse> findAllForAdmin(Pageable pageable) {
         return groupRepository.findAllBy(pageable).map(groupMapper::toAdminResponse);
     }
 
     public StudyGroup findById(Long id) {
-        return groupRepository.findById(id).orElseThrow(() -> new NotFoundException("Group topilmadi: " + id));
+        return groupRepository.findById(id).orElseThrow(() -> new NotFoundException("Группа не найдена: " + id));
     }
 
     public AdminGroupResponse findAdminResponseById(Long id) {
-        return groupMapper.toAdminResponse(groupRepository.findById(id).orElseThrow(() -> new NotFoundException("Group topilmadi: " + id)));
+        return groupMapper.toAdminResponse(groupRepository.findById(id).orElseThrow(() -> new NotFoundException("Группа не найдена: " + id)));
     }
 
     @Transactional
@@ -60,7 +62,9 @@ public class StudyGroupService {
                 resolveUsers(request.teacherIds()),
                 resolveUsers(request.studentIds())
         );
-        return groupRepository.save(group);
+        StudyGroup saved = groupRepository.save(group);
+        groupChatSyncService.syncForGroup(saved);
+        return saved;
     }
 
     public GroupResponse createResponse(GroupRequest request) {
@@ -70,7 +74,9 @@ public class StudyGroupService {
                 resolveUsers(request.teacherIds()),
                 resolveUsers(request.studentIds())
         );
-        return groupMapper.toResponse(groupRepository.save(group));
+        StudyGroup saved = groupRepository.save(group);
+        groupChatSyncService.syncForGroup(saved);
+        return groupMapper.toResponse(saved);
     }
 
     @Transactional
@@ -83,7 +89,9 @@ public class StudyGroupService {
                 resolveUsers(request.teacherIds()),
                 resolveUsers(request.studentIds())
         );
-        return groupMapper.toResponse(groupRepository.save(group));
+        StudyGroup saved = groupRepository.save(group);
+        groupChatSyncService.syncForGroup(saved);
+        return groupMapper.toResponse(saved);
     }
 
     @Transactional
@@ -122,11 +130,12 @@ public class StudyGroupService {
                 }
             }
         } catch (IOException e) {
-            throw new ErrorMessageException("Excel faylni o'qishda xatolik: " + e.getMessage(), ErrorCodes.InvalidParams);
+            throw new ErrorMessageException("Ошибка чтения Excel файла: " + e.getMessage(), ErrorCodes.InvalidParams);
         }
 
         group.setStudents(students);
-        groupRepository.save(group);
+        StudyGroup saved = groupRepository.save(group);
+        groupChatSyncService.syncForGroup(saved);
         return Map.of("imported", imported, "skipped", skipped);
     }
 
@@ -136,7 +145,7 @@ public class StudyGroupService {
         }
         List<User> users = userRepository.findAllById(ids);
         if (users.size() != ids.size()) {
-            throw new NotFoundException("Ba'zi foydalanuvchilar topilmadi");
+            throw new NotFoundException("Некоторые пользователи не найдены");
         }
         return new HashSet<>(users);
     }
@@ -147,7 +156,7 @@ public class StudyGroupService {
         }
         List<Subject> subjects = subjectRepository.findAllById(ids);
         if (subjects.size() != ids.size()) {
-            throw new NotFoundException("Ba'zi fanlar topilmadi");
+            throw new NotFoundException("Некоторые предметы не найдены");
         }
         return new HashSet<>(subjects);
     }
@@ -167,12 +176,20 @@ public class StudyGroupService {
 
     public TeacherGroupResponse findOwnTeacherGroupById(Long groupId, User user) {
         StudyGroup group = groupRepository.findByIdAndTeacherId(groupId, user.getId())
-                .orElseThrow(() -> new NotFoundException("Group topilmadi: " + groupId));
+                .orElseThrow(() -> new NotFoundException("Группа не найдена: " + groupId));
         return groupMapper.toTeacherResponse(group);
     }
 
     public List<StudentGroupResponse> findOwnStudentGroups(User user) {
         return groupRepository.findByStudentsId(user.getId()).stream()
                 .map(groupMapper::toStudentResponse).toList();
+    }
+
+    public List<UserSummary> findGroupMembersForStudent(Long groupId, User requestingStudent) {
+        StudyGroup group = groupRepository.findByIdAndStudentId(groupId, requestingStudent.getId())
+                .orElseThrow(() -> new NotFoundException("Группа не найдена: " + groupId));
+        return group.getStudents().stream()
+                .map(s -> new UserSummary(s.getId(), s.getFirstName(), s.getLastName(), s.getEmail()))
+                .toList();
     }
 }

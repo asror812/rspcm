@@ -14,7 +14,6 @@ import org.example.rspcm.repository.PracticeRepository;
 import org.example.rspcm.mapper.PracticeMapper;
 import lombok.RequiredArgsConstructor;
 import org.example.rspcm.repository.SubjectRepository;
-import org.example.rspcm.repository.TeacherProfileRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ public class PracticeService {
 
     private final PracticeRepository practiceRepository;
     private final PracticeMapper practiceMapper;
-    private final TeacherProfileRepository teacherProfileRepository;
     private final SubjectRepository subjectRepository;
 
     public PracticeResponse create(PracticeRequest request, User user) {
@@ -53,7 +51,10 @@ public class PracticeService {
                     .map(practiceMapper::toResponse);
         }
 
-        validateTeacherSubjectAccess(userId, subjectId);
+        // When fetching own practices the teacher implicitly owns them — no subject filter required
+        if (!own) {
+            validateTeacherSubjectAccess(userId, subjectId);
+        }
 
         return practiceRepository.searchAll(query, own, subjectId, userId, pageable)
                 .map(practiceMapper::toResponse);
@@ -72,7 +73,7 @@ public class PracticeService {
 
     public Practice findById(Long id, User user) {
         Practice practice = practiceRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Practice topilmadi: " + id));
+                .orElseThrow(() -> new NotFoundException("Практика не найдена: " + id));
 
         if (isAdmin(user)) {
             return practice;
@@ -123,20 +124,20 @@ public class PracticeService {
 
     private Subject resolveSubject(Long subjectId) {
         if (subjectId == null) {
-            throw new ErrorMessageException("subjectId kiritilishi shart", ErrorCodes.BadRequest);
+            throw new ErrorMessageException("Необходимо указать subjectId", ErrorCodes.BadRequest);
         }
         return subjectRepository.findById(subjectId)
-                .orElseThrow(() -> new NotFoundException("Subject topilmadi: " + subjectId));
+                .orElseThrow(() -> new NotFoundException("Предмет не найден: " + subjectId));
     }
 
     private void validateTeacherSubjectAccess(Long userId, Long subjectId) {
         if (subjectId == null) {
-            throw new ErrorMessageException("Fan bo'yicha filtr kiritilishi shart", ErrorCodes.BadRequest);
+            throw new ErrorMessageException("Необходимо указать фильтр по предмету", ErrorCodes.BadRequest);
         }
 
-        boolean teachesSubject = teacherProfileRepository.existsByUserIdAndTeachingSubjectsId(userId, subjectId);
+        boolean teachesSubject = subjectRepository.existsByIdAndTeachersId(subjectId, userId);
         if (!teachesSubject) {
-            throw new ErrorMessageException("Faqat o'zingizga biriktirilgan fan imtihonlarini ko'ra olasiz", ErrorCodes.Forbidden);
+            throw new ErrorMessageException("Вы можете работать только с практиками по закреплённым за вами предметам", ErrorCodes.Forbidden);
         }
     }
 

@@ -13,13 +13,10 @@ import org.example.rspcm.model.enums.RoleName;
 import org.example.rspcm.repository.QuestionRepository;
 import org.example.rspcm.repository.SubjectRepository;
 import lombok.RequiredArgsConstructor;
-import org.example.rspcm.repository.TeacherProfileRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static org.example.rspcm.model.enums.RoleName.ROLE_ADMIN;
 
@@ -30,7 +27,6 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final SubjectRepository subjectRepository;
     private final QuestionMapper questionMapper;
-    private final TeacherProfileRepository teacherProfileRepository;
 
     @Transactional
     public Question create(QuestionRequest request, User user) {
@@ -41,7 +37,7 @@ public class QuestionService {
             Question question = questionMapper.toEntity(
                     request,
                     subjectRepository.findById(request.subjectId())
-                            .orElseThrow(() -> new NotFoundException("Subject topilmadi: " + request.subjectId())),
+                            .orElseThrow(() -> new NotFoundException("Предмет не найден: " + request.subjectId())),
                     user
             );
 
@@ -50,13 +46,12 @@ public class QuestionService {
         }
 
         Subject subject = subjectRepository.findById(request.subjectId())
-                .orElseThrow(() -> new NotFoundException("Subject topilmadi: " + request.subjectId()));
+                .orElseThrow(() -> new NotFoundException("Предмет не найден: " + request.subjectId()));
 
-        boolean teachesSubject = teacherProfileRepository
-                .existsByUserIdAndTeachingSubjectsId(user.getId(), request.subjectId());
+        boolean teachesSubject = subjectRepository.existsByIdAndTeachersId(request.subjectId(), user.getId());
 
         if (!teachesSubject) {
-            throw new ErrorMessageException("O'qituvchi faqat o'zi dars beradigan fan uchun savol yarata oladi", ErrorCodes.Forbidden);
+            throw new ErrorMessageException("Преподаватель может создавать вопросы только по предметам, которые он ведёт", ErrorCodes.Forbidden);
         }
 
         Question question = questionMapper.toEntity(
@@ -77,7 +72,7 @@ public class QuestionService {
 
     public Question findById(Long id) {
         return questionRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundException("Question topilmadi: " + id));
+                .orElseThrow(() -> new NotFoundException("Вопрос не найден: " + id));
     }
 
     public QuestionResponse findResponseById(Long id) {
@@ -93,22 +88,21 @@ public class QuestionService {
                     question,
                     request,
                     subjectRepository.findById(request.subjectId())
-                            .orElseThrow(() -> new NotFoundException("Subject topilmadi: " + request.subjectId()))
+                            .orElseThrow(() -> new NotFoundException("Предмет не найден: " + request.subjectId()))
             );
         }
 
-        boolean teachesSubject = teacherProfileRepository
-                .existsByUserIdAndTeachingSubjectsId(user.getId(), request.subjectId());
+        boolean teachesSubject = subjectRepository.existsByIdAndTeachersId(request.subjectId(), user.getId());
 
         if (!teachesSubject) {
-            throw new ErrorMessageException("O'qituvchi faqat o'zi dars beradigan fan uchun savol yarata oladi", ErrorCodes.Forbidden);
+            throw new ErrorMessageException("Преподаватель может создавать вопросы только по предметам, которые он ведёт", ErrorCodes.Forbidden);
         }
 
         questionMapper.updateEntity(
                 question,
                 request,
                 subjectRepository.findById(request.subjectId())
-                        .orElseThrow(() -> new NotFoundException("Subject topilmadi: " + request.subjectId()))
+                        .orElseThrow(() -> new NotFoundException("Предмет не найден: " + request.subjectId()))
         );
 
         return questionMapper.toResponse(questionRepository.save(question));
@@ -116,12 +110,12 @@ public class QuestionService {
 
     private void validateTeacherSubjectAccess(Long userId, Long subjectId) {
         if (subjectId == null) {
-            throw new ErrorMessageException("Fan bo'yicha filtr kiritilishi shart", ErrorCodes.BadRequest);
+            throw new ErrorMessageException("Необходимо указать фильтр по предмету", ErrorCodes.BadRequest);
         }
 
-        boolean teachesSubject = teacherProfileRepository.existsByUserIdAndTeachingSubjectsId(userId, subjectId);
+        boolean teachesSubject = subjectRepository.existsByIdAndTeachersId(subjectId, userId);
         if (!teachesSubject) {
-            throw new ErrorMessageException("Faqat o'zingizga biriktirilgan fan imtihonlarini ko'ra olasiz", ErrorCodes.Forbidden);
+            throw new ErrorMessageException("Вы можете просматривать только экзамены по закреплённым за вами предметам", ErrorCodes.Forbidden);
         }
     }
 
@@ -135,8 +129,7 @@ public class QuestionService {
             return;
         }
 
-        boolean teachesSubject = teacherProfileRepository
-                .existsByUserIdAndTeachingSubjectsId(user.getId(), question.getSubject().getId());
+        boolean teachesSubject = subjectRepository.existsByIdAndTeachersId(question.getSubject().getId(), user.getId());
 
         if (!teachesSubject) {
             throw new ErrorMessageException(

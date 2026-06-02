@@ -12,10 +12,14 @@ import org.example.rspcm.model.entity.TeacherProfile;
 import org.example.rspcm.model.entity.Exam;
 import org.example.rspcm.model.entity.ExamPractice;
 import org.example.rspcm.model.entity.ExamQuestion;
+import org.example.rspcm.model.entity.Chat;
+import org.example.rspcm.model.entity.ChatMember;
 import org.example.rspcm.model.entity.Practice;
 import org.example.rspcm.model.entity.PracticeParticipation;
 import org.example.rspcm.model.entity.PracticeParticipationMember;
 import org.example.rspcm.model.entity.PracticeSubmission;
+import org.example.rspcm.model.enums.ChatMemberRole;
+import org.example.rspcm.model.enums.ChatType;
 import org.example.rspcm.model.enums.GroupLanguage;
 import org.example.rspcm.model.enums.QuestionType;
 import org.example.rspcm.model.enums.RoleName;
@@ -40,6 +44,9 @@ import org.example.rspcm.repository.PracticeRepository;
 import org.example.rspcm.repository.PracticeParticipationRepository;
 import org.example.rspcm.repository.PracticeParticipationMemberRepository;
 import org.example.rspcm.repository.PracticeSubmissionRepository;
+import org.example.rspcm.repository.ChatRepository;
+import org.example.rspcm.repository.ChatMemberRepository;
+import org.example.rspcm.service.GroupChatSyncService;
 import org.example.rspcm.service.UserProfileSyncService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.data.domain.Pageable;
@@ -73,6 +80,9 @@ public class DataInitializer implements CommandLineRunner {
     private final PracticeParticipationRepository practiceParticipationRepository;
     private final PracticeParticipationMemberRepository practiceParticipationMemberRepository;
     private final PracticeSubmissionRepository practiceSubmissionRepository;
+    private final ChatRepository chatRepository;
+    private final ChatMemberRepository chatMemberRepository;
+    private final GroupChatSyncService groupChatSyncService;
     private final UserProfileSyncService userProfileSyncService;
     private final PasswordEncoder passwordEncoder;
 
@@ -100,7 +110,7 @@ public class DataInitializer implements CommandLineRunner {
         createOrUpdateUser("k1.anvar.rasulov@rspcm.local", "202400101", "Anvar Rasulov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
         createOrUpdateUser("k1.alisher.nazarov@rspcm.local", "202400102", "Alisher Nazarov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
         createOrUpdateUser("k1.axror.karimov@rspcm.local", "202400103", "Axror Karimov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
-        createOrUpdateUser("k1.asror.abdullayeva@rspcm.local", "202400104", "Asror Abdullayeva", "123", Set.of(RoleName.ROLE_STUDENT), roles);
+        createOrUpdateUser("k1.asror.abdullayev@rspcm.local", "202400104", "Asror Ruzimurodov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
         createOrUpdateUser("k1.abror.rahimov@rspcm.local", "202400105", "Abror Rahimov", "123", Set.of(RoleName.ROLE_STUDENT), roles);
 
         // L1 group students (second five)
@@ -114,13 +124,14 @@ public class DataInitializer implements CommandLineRunner {
         createOrUpdateUser("math.teacher@rspcm.local", "202400301", "Math Teacher", "123", Set.of(RoleName.ROLE_TEACHER), roles);
         createOrUpdateUser("physics.teacher@rspcm.local", "202400302", "Physics Teacher", "123", Set.of(RoleName.ROLE_TEACHER), roles);
         createOrUpdateUser("programming.teacher@rspcm.local", "202400303", "Programming Teacher", "123", Set.of(RoleName.ROLE_TEACHER), roles);
+        createOrUpdateUser("multi.teacher@rspcm.local", "202400304", "Multi Subject Teacher", "123", Set.of(RoleName.ROLE_TEACHER), roles);
     }
 
     private void seedAcademicRelations() {
         User k1Student1 = getUser("k1.anvar.rasulov@rspcm.local");
         User k1Student2 = getUser("k1.alisher.nazarov@rspcm.local");
         User k1Student3 = getUser("k1.axror.karimov@rspcm.local");
-        User k1Student4 = getUser("k1.asror.abdullayeva@rspcm.local");
+        User k1Student4 = getUser("k1.asror.abdullayev@rspcm.local");
         User k1Student5 = getUser("k1.abror.rahimov@rspcm.local");
 
         User l1Student1 = getUser("l1.bahrom.rasulov@rspcm.local");
@@ -132,15 +143,17 @@ public class DataInitializer implements CommandLineRunner {
         User teacherMath = getUser("math.teacher@rspcm.local");
         User teacherPhysics = getUser("physics.teacher@rspcm.local");
         User teacherProgramming = getUser("programming.teacher@rspcm.local");
+        User teacherMulti = getUser("multi.teacher@rspcm.local");
 
 
-        Subject math = createOrUpdateSubject("Mathematics", "Algebra va Calculus asoslari.");
-        Subject physics = createOrUpdateSubject("Physics", "Mexanika va elektr bo'limlari.");
-        Subject programming = createOrUpdateSubject("Programming", "Java va backend dasturlash.");
+        Subject math = createOrUpdateSubject("Математика", "Алгебра и основы математического анализа.");
+        Subject physics = createOrUpdateSubject("Физика", "Механика и основы электродинамики.");
+        Subject programming = createOrUpdateSubject("Программирование", "Java, основы backend разработки и алгоритмы.");
 
         assignTeacherProfile(teacherMath, "PhD", Set.of(math));
         assignTeacherProfile(teacherPhysics, "MSc", Set.of(physics));
         assignTeacherProfile(teacherProgramming, "MSc", Set.of(programming));
+        assignTeacherProfile(teacherMulti, "MSc", Set.of(physics, programming));
 
         assignStudentProfile(k1Student1, 1);
         assignStudentProfile(k1Student2, 1);
@@ -162,6 +175,12 @@ public class DataInitializer implements CommandLineRunner {
         programming.setTeachers(new HashSet<>(Set.of(teacherProgramming)));
         subjectRepository.save(programming);
 
+        physics.getTeachers().add(teacherMulti);
+        subjectRepository.save(physics);
+
+        programming.getTeachers().add(teacherMulti);
+        subjectRepository.save(programming);
+
         createOrUpdateGroup(
                 "K1",
                 "K1 guruhi",
@@ -175,9 +194,10 @@ public class DataInitializer implements CommandLineRunner {
                 "L1 guruhi",
                 GroupLanguage.RU,
                 Set.of(physics, programming),
-                Set.of(teacherPhysics, teacherProgramming),
+                Set.of(teacherPhysics, teacherProgramming, teacherMulti),
                 Set.of(l1Student1, l1Student2, l1Student3, l1Student4, l1Student5)
         );
+        seedStudyGroupChats();
 
         ensureMinimumQuestions(math, teacherMath, 10);
         ensureMinimumQuestions(physics, teacherPhysics, 10);
@@ -187,8 +207,8 @@ public class DataInitializer implements CommandLineRunner {
         StudyGroup l1Group = getGroup("L1");
 
         Exam questionExam = createOrUpdateExam(
-                "Umumiy savol imtihoni",
-                "Savollar asosidagi auto-seeded imtihon.",
+                "Общий тест по программированию",
+                "Тестовая сессия: вопросы по предмету Программирование.",
                 programming,
                 teacherProgramming,
                 Set.of(k1Group, l1Group),
@@ -197,8 +217,8 @@ public class DataInitializer implements CommandLineRunner {
         attachSubjectQuestionsToExam(questionExam, programming);
 
         Exam mathQuestionExam = createOrUpdateExam(
-                "Matematika savol imtihoni",
-                "Matematika fanidan savollar asosidagi auto-seeded imtihon.",
+                "Тест по математике",
+                "Контрольный тест по темам алгебры и анализа.",
                 math,
                 teacherMath,
                 Set.of(k1Group),
@@ -208,11 +228,11 @@ public class DataInitializer implements CommandLineRunner {
 
         List<Practice> practices = ensureMinimumPractices(
                 List.of(
-                        "Math practical task 1",
-                        "Physics practical task 1",
-                        "Programming practical task 1",
-                        "Programming practical task 2",
-                        "Cross-subject practical task 1"
+                        "Практическая по математике: Интегралы",
+                        "Практическая по физике: Законы Ньютона",
+                        "Практическая по программированию: Рефакторинг сервиса",
+                        "Практическая по программированию: Задача на алгоритмы",
+                        "Кросс-предметная практическая: Проект на Java"
                 ),
                 List.of(
                         math,
@@ -221,12 +241,18 @@ public class DataInitializer implements CommandLineRunner {
                         programming,
                         programming
                 ),
-                teacherProgramming
+                List.of(
+                        teacherMath,
+                        teacherPhysics,
+                        teacherProgramming,
+                        teacherProgramming,
+                        teacherProgramming
+                )
         );
 
         Exam practicalExam = createOrUpdateExam(
-                "Umumiy amaliy imtihon",
-                "Amaliy topshiriqlar asosidagi auto-seeded imtihon.",
+                "Практическая сессия по программированию",
+                "Практические задания: проекты и задачи на реализацию.",
                 programming,
                 teacherProgramming,
                 Set.of(k1Group, l1Group),
@@ -246,8 +272,7 @@ public class DataInitializer implements CommandLineRunner {
         User k1Student1 = getUser("k1.anvar.rasulov@rspcm.local");
         User k1Student2 = getUser("k1.alisher.nazarov@rspcm.local");
         User k1Student3 = getUser("k1.axror.karimov@rspcm.local");
-        User k1Student4 = getUser("k1.asror.abdullayeva@rspcm.local");
-        User k1Student5 = getUser("k1.abror.rahimov@rspcm.local");
+        User k1Student4 = getUser("k1.asror.abdullayev@rspcm.local");
         User l1Student1 = getUser("l1.bahrom.rasulov@rspcm.local");
         User l1Student2 = getUser("l1.bahodir.nazarov@rspcm.local");
         User l1Student3 = getUser("l1.bobur.karimov@rspcm.local");
@@ -434,33 +459,138 @@ public class DataInitializer implements CommandLineRunner {
         studyGroupRepository.save(group);
     }
 
-    private void ensureMinimumQuestions(Subject subject, User teacher, int minimumCount) {
-        for (int index = 1; index <= minimumCount; index++) {
-            String text = subject.getName() + " question " + index;
-            Question question = questionRepository.findBySubjectIdAndText(subject.getId(), text)
-                    .orElse(null);
+    private void seedStudyGroupChats() {
+        groupChatSyncService.syncForAllGroups(studyGroupRepository.findAll());
+    }
 
-            if (question != null) {
+    private void ensureChatMember(Chat chat, User user, ChatMemberRole role) {
+        if (chatMemberRepository.existsByChatIdAndUserId(chat.getId(), user.getId())) {
+            return;
+        }
+        ChatMember member = new ChatMember();
+        member.setChat(chat);
+        member.setUser(user);
+        member.setRole(role);
+        chatMemberRepository.save(member);
+    }
+
+    private void ensureMinimumQuestions(Subject subject, User teacher, int minimumCount) {
+        List<Question> existing = questionRepository.findBySubjectIdAndDeletedFalse(subject.getId());
+        if (existing.size() >= minimumCount) {
+            return;
+        }
+
+        List<QuestionSpec> specs = new ArrayList<>();
+        String nameLower = subject.getName() == null ? "" : subject.getName().toLowerCase();
+
+        if (nameLower.contains("матем")) {
+            specs.add(new QuestionSpec("Вычислите интеграл ∫ x^2 dx.", QuestionType.OPEN, null));
+            specs.add(new QuestionSpec("Чему равна производная функции f(x)=x^3?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("3x^2", true), new OptionSpec("2x", false))));
+            specs.add(new QuestionSpec("Какие из перечисленных чисел являются простыми?", QuestionType.MULTIPLE_CHOICE,
+                    List.of(new OptionSpec("2", true), new OptionSpec("4", false), new OptionSpec("5", true), new OptionSpec("9", false))));
+            specs.add(new QuestionSpec("Решите уравнение: 2x + 3 = 11.", QuestionType.CLOSED,
+                    List.of(new OptionSpec("x=4", true), new OptionSpec("x=3", false))));
+            specs.add(new QuestionSpec("Найдите площадь треугольника со сторонами 3, 4, 5.", QuestionType.OPEN, null));
+            specs.add(new QuestionSpec("Что такое логарифм?", QuestionType.MULTIPLE_CHOICE,
+                    List.of(new OptionSpec("Обратная функция к экспоненте", true), new OptionSpec("Производная функции", false), new OptionSpec("Интеграл функции", false), new OptionSpec("Первообразная", false))));
+            specs.add(new QuestionSpec("Чему равна сумма углов треугольника?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("180°", true), new OptionSpec("360°", false))));
+            specs.add(new QuestionSpec("Разложите число 24 на простые множители.", QuestionType.OPEN, null));
+            specs.add(new QuestionSpec("Какая формула используется для решения квадратного уравнения?", QuestionType.MULTIPLE_CHOICE,
+                    List.of(new OptionSpec("x = (-b ± √(b²-4ac)) / 2a", true), new OptionSpec("x = b/a", false), new OptionSpec("x = √(a²+b²)", false))));
+            specs.add(new QuestionSpec("Чему равно число Пи (приблизительно)?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("3.14", true), new OptionSpec("2.71", false))));
+        } else if (nameLower.contains("физ")) {
+            specs.add(new QuestionSpec("Запишите второй закон Ньютона.", QuestionType.OPEN, null));
+            specs.add(new QuestionSpec("Каково направление центростремительной силы при круговом движении?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("К центру круга", true), new OptionSpec("По касательной", false))));
+            specs.add(new QuestionSpec("Какие величины являются векторами?", QuestionType.MULTIPLE_CHOICE,
+                    List.of(new OptionSpec("Скорость", true), new OptionSpec("Масса", false), new OptionSpec("Ускорение", true), new OptionSpec("Температура", false))));
+            specs.add(new QuestionSpec("Что такое идеальный газ?", QuestionType.OPEN, null));
+            specs.add(new QuestionSpec("Какой закон описывает зависимость давления газа от температуры?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("Закон Гей-Люссака", true), new OptionSpec("Закон Бойля", false))));
+            specs.add(new QuestionSpec("Единица измерения энергии в СИ:", QuestionType.MULTIPLE_CHOICE,
+                    List.of(new OptionSpec("Джоуль", true), new OptionSpec("Ватт", false), new OptionSpec("Вольт", false), new OptionSpec("Ньютон", false))));
+            specs.add(new QuestionSpec("Чему равна скорость света в вакууме?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("3×10⁸ м/с", true), new OptionSpec("3×10⁶ м/с", false))));
+            specs.add(new QuestionSpec("Объясните понятие инерции.", QuestionType.OPEN, null));
+            specs.add(new QuestionSpec("Какие типы сил действуют в природе?", QuestionType.MULTIPLE_CHOICE,
+                    List.of(new OptionSpec("Гравитационные", true), new OptionSpec("Электромагнитные", true), new OptionSpec("Слабые", true), new OptionSpec("Механические", false))));
+            specs.add(new QuestionSpec("Что такое потенциальная энергия?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("Энергия, связанная с положением", true), new OptionSpec("Энергия движения", false))));
+        } else if (nameLower.contains("программ")) {
+            specs.add(new QuestionSpec("Опишите принцип работы сборщика мусора в JVM.", QuestionType.OPEN, null));
+            specs.add(new QuestionSpec("Какой модификатор видимости в Java делает поле доступным только внутри класса?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("private", true), new OptionSpec("public", false))));
+            specs.add(new QuestionSpec("Какие структуры данных подходят для реализации очереди?", QuestionType.MULTIPLE_CHOICE,
+                    List.of(new OptionSpec("ArrayList", false), new OptionSpec("LinkedList", true), new OptionSpec("Stack", false), new OptionSpec("Deque", true))));
+            specs.add(new QuestionSpec("Что такое полиморфизм в ООП?", QuestionType.OPEN, null));
+            specs.add(new QuestionSpec("Какая сложность алгоритма быстрой сортировки в среднем случае?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("O(n log n)", true), new OptionSpec("O(n²)", false))));
+            specs.add(new QuestionSpec("Какие из следующих являются SOLID принципами?", QuestionType.MULTIPLE_CHOICE,
+                    List.of(new OptionSpec("Single Responsibility", true), new OptionSpec("Open/Closed", true), new OptionSpec("Liskov Substitution", true), new OptionSpec("Multiple Inheritance", false))));
+            specs.add(new QuestionSpec("Что такое REST API?", QuestionType.OPEN, null));
+            specs.add(new QuestionSpec("Какой паттерн проектирования используется для создания единственного экземпляра класса?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("Singleton", true), new OptionSpec("Factory", false))));
+            specs.add(new QuestionSpec("В каком порядке выполняются исключения в Java?", QuestionType.MULTIPLE_CHOICE,
+                    List.of(new OptionSpec("try -> catch -> finally", true), new OptionSpec("catch -> try -> finally", false), new OptionSpec("finally -> try -> catch", false))));
+            specs.add(new QuestionSpec("Что такое рекурсия в программировании?", QuestionType.CLOSED,
+                    List.of(new OptionSpec("Функция, вызывающая саму себя", true), new OptionSpec("Цикл с переменным условием", false))));
+        }
+
+        int order = existing.size() + 1;
+        for (QuestionSpec spec : specs) {
+            if (questionRepository.findBySubjectIdAndText(subject.getId(), spec.text).isPresent()) {
                 continue;
             }
-            question = Question.builder()
-                    .text(text)
+            Question q = Question.builder()
+                    .text(spec.text)
                     .subject(subject)
                     .createdBy(teacher)
+                    .type(spec.type)
                     .options(new ArrayList<>())
                     .build();
 
-            if (index == 1) {
-                question.setType(QuestionType.OPEN);
-                question.setOptions(new ArrayList<>());
-            } else if (index % 2 == 0) {
-                question.setType(QuestionType.CLOSED);
-                question.setOptions(buildClosedOptions(question));
+            if (spec.options != null && !spec.options.isEmpty()) {
+                List<QuestionOption> opts = new ArrayList<>();
+                int idx = 1;
+                for (OptionSpec os : spec.options) {
+                    QuestionOption option = new QuestionOption();
+                    option.setQuestion(q);
+                    option.setText(os.text);
+                    option.setCorrect(os.correct);
+                    option.setOrderIndex(idx++);
+                    opts.add(option);
+                }
+                q.setOptions(opts);
             } else {
-                question.setType(QuestionType.MULTIPLE_CHOICE);
-                question.setOptions(buildMultipleChoiceOptions(question));
+                q.setOptions(new ArrayList<>());
             }
-            questionRepository.save(question);
+
+            questionRepository.save(q);
+            order++;
+            if (order > minimumCount) break;
+        }
+    }
+
+    private static class QuestionSpec {
+        final String text;
+        final QuestionType type;
+        final List<OptionSpec> options;
+        QuestionSpec(String text, QuestionType type, List<OptionSpec> options) {
+            this.text = text;
+            this.type = type;
+            this.options = options;
+        }
+    }
+
+    private static class OptionSpec {
+        final String text;
+        final boolean correct;
+        OptionSpec(String text, boolean correct) {
+            this.text = text;
+            this.correct = correct;
         }
     }
 
@@ -485,6 +615,19 @@ public class DataInitializer implements CommandLineRunner {
         boolean isNew = exam.getId() == null;
 
         if (!isNew) {
+            boolean changed = false;
+            if (exam.getStatus() != ExamStatus.PUBLISHED) {
+                exam.setStatus(ExamStatus.PUBLISHED);
+                changed = true;
+            }
+            if (examType == ExamType.QUESTION && (exam.getTaskLimit() == null || exam.getTaskLimit() <= 0)) {
+                exam.setTaskLimit(10);
+                changed = true;
+            }
+            if (changed) {
+                exam.setUpdatedAt(LocalDateTime.now());
+                return examRepository.save(exam);
+            }
             return exam;
         }
 
@@ -553,13 +696,21 @@ public class DataInitializer implements CommandLineRunner {
         }
         exam.setQuestions(examQuestions);
         examRepository.save(exam);
+
+        // Ensure all ExamQuestion links are persisted
+        for (ExamQuestion eq : examQuestions) {
+            if (eq.getId() == null) {
+                examQuestionRepository.save(eq);
+            }
+        }
     }
 
-    private List<Practice> ensureMinimumPractices(List<String> taskNames, List<Subject> subjects, User createdBy) {
+    private List<Practice> ensureMinimumPractices(List<String> taskNames, List<Subject> subjects, List<User> creators) {
         List<Practice> tasks = new ArrayList<>();
         for (int index = 0; index < taskNames.size(); index++) {
             String taskName = taskNames.get(index);
             Subject subject = subjects.get(index);
+            User createdBy = creators.get(index);
             Practice task = practiceRepository.findAll().stream()
                     .filter(existing -> taskName.equals(existing.getName()))
                     .findFirst()
@@ -619,22 +770,6 @@ public class DataInitializer implements CommandLineRunner {
 
     private void backfillExamAndExamQuestionAuditData(User fallbackUser) {
         // create-only mode: do not mutate existing records
-    }
-
-    private List<QuestionOption> buildClosedOptions(Question question) {
-        List<QuestionOption> options = new ArrayList<>();
-        options.add(option(question, "True", true, 1));
-        options.add(option(question, "False", false, 2));
-        return options;
-    }
-
-    private List<QuestionOption> buildMultipleChoiceOptions(Question question) {
-        List<QuestionOption> options = new ArrayList<>();
-        options.add(option(question, "Option A", true, 1));
-        options.add(option(question, "Option B", false, 2));
-        options.add(option(question, "Option C", true, 3));
-        options.add(option(question, "Option D", false, 4));
-        return options;
     }
 
     private QuestionOption option(Question question, String text, boolean correct, int orderIndex) {
