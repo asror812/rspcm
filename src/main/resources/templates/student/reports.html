@@ -32,20 +32,63 @@
         <h1>My Reports</h1>
         <p>Your practice submission reports</p>
       </div>
+
+      <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}">Error</span>
+      </div>
+
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Submitted Reports</span>
-          <a th:href="@{/student/upload}" class="btn btn-primary btn-sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Upload New
-          </a>
+          <span class="card-title">Practice Submissions</span>
+          <span class="badge badge-muted" th:text="${participations?.size() ?: 0} + ' participations'">0</span>
         </div>
-        <div class="card-body">
+        <div class="table-wrapper" th:if="${participations != null and !participations.isEmpty()}">
+          <table>
+            <thead>
+              <tr>
+                <th>Practice</th>
+                <th>Exam</th>
+                <th>Participation Status</th>
+                <th>Submission Status</th>
+                <th>Teacher Comment</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="p : ${participations}">
+                <td th:text="${p.practice?.name ?: '-'}">Practice</td>
+                <td th:text="${'Exam #' + p.examId}">Exam</td>
+                <td>
+                  <span class="badge"
+                        th:classappend="${p.status?.name() == 'PRACTICE_CHOSEN'} ? 'badge-success' :
+                                        (${p.status?.name() == 'WAITING_MEMBERS'} ? 'badge-warning' : 'badge-muted')"
+                        th:text="${p.status}">STATUS</span>
+                </td>
+                <td>
+                  <span th:if="${p.submission != null}" class="badge"
+                        th:classappend="${p.submission?.status?.name() == 'GRADED'} ? 'badge-success' :
+                                        (${p.submission?.status?.name() == 'RETURNED'} ? 'badge-destructive' : 'badge-warning')"
+                        th:text="${p.submission?.status}">STATUS</span>
+                  <span th:unless="${p.submission != null}" class="badge badge-muted">Not submitted</span>
+                </td>
+                <td th:text="${p.submission?.teacherComment ?: '-'}">-</td>
+                <td>
+                  <a th:if="${p.submission == null and p.status?.name() == 'PRACTICE_CHOSEN'}"
+                     th:href="@{/student/upload}" class="btn btn-sm btn-primary">Submit</a>
+                  <span th:if="${p.submission != null}" style="font-size:0.75rem;color:var(--text-muted);">Submitted</span>
+                  <span th:if="${p.submission == null and p.status?.name() != 'PRACTICE_CHOSEN'}"
+                        style="font-size:0.75rem;color:var(--text-muted);">Not ready</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-body" th:unless="${participations != null and !participations.isEmpty()}">
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
             </svg>
-            <p>No reports submitted yet. <a th:href="@{/student/upload}" style="color:var(--primary)">Upload your first report.</a></p>
+            <p>No practice participations yet. <a th:href="@{/student/select-theme}" style="color:var(--primary)">Select a practice</a> first.</p>
           </div>
         </div>
       </div>

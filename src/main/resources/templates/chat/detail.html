@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat — RSPCM</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+
+  <th:block th:if="${sidebarRole == 'admin'}">
+    <div th:replace="~{fragments/admin-sidebar :: adminSidebar('chat')}"></div>
+  </th:block>
+  <th:block th:if="${sidebarRole == 'teacher'}">
+    <div th:replace="~{fragments/teacher-sidebar :: teacherSidebar('chat')}"></div>
+  </th:block>
+  <th:block th:if="${sidebarRole != 'admin' and sidebarRole != 'teacher'}">
+    <div th:replace="~{fragments/student-sidebar :: studentSidebar('chat')}"></div>
+  </th:block>
+
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+
+  <div class="main-content" style="padding:0;">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title">Chat</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'U'}">U</div>
+      </div>
+    </header>
+
+    <div th:if="${error}" class="alert alert-error" style="margin:1rem;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span th:text="${error}">Error</span>
+    </div>
+
+    <div class="chat-layout">
+      <!-- Chat list sidebar -->
+      <div class="chat-sidebar">
+        <div style="padding:0.85rem 1rem;font-weight:600;font-size:0.9rem;border-bottom:1px solid var(--border);">
+          My Chats
+        </div>
+        <div th:if="${chats != null and !chats.isEmpty()}">
+          <a th:each="chat : ${chats}"
+             th:href="@{/chat/{id}(id=${chat.id})}"
+             th:classappend="${chat.id == chatId} ? ' active' : ''"
+             class="chat-item">
+            <div class="chat-item-title" th:text="${chat.title ?: 'Chat'}">Chat</div>
+            <div class="chat-item-last" th:text="${chat.lastMessage ?: 'No messages yet'}">Last message</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.1rem;"
+                 th:text="${chat.memberCount + ' member' + (chat.memberCount != 1 ? 's' : '')}">1 member</div>
+          </a>
+        </div>
+        <div th:unless="${chats != null and !chats.isEmpty()}" class="empty-state" style="padding:2rem 1rem;">
+          <p>No chats.</p>
+        </div>
+      </div>
+
+      <!-- Chat main area -->
+      <div class="chat-main">
+        <div class="chat-messages" id="chatMessages">
+          <div th:if="${messages != null}" th:each="msg : ${messages}"
+               th:class="${msg.mine} ? 'chat-message mine' : 'chat-message theirs'">
+            <div class="chat-message-bubble" th:text="${msg.content}">Message</div>
+            <div class="chat-message-meta" th:text="${msg.senderName}">Sender</div>
+          </div>
+          <div th:if="${messages == null or messages.isEmpty()}" style="text-align:center;color:var(--text-muted);padding:2rem;font-size:0.875rem;">
+            No messages yet. Be the first to say hello!
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="msgInput" class="chat-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage()"/>
+          <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+<script th:inline="javascript">
+const JWT_TOKEN = /*[[${jwtToken}]]*/ '';
+const CHAT_ID = /*[[${chatId}]]*/ 0;
+const MY_EMAIL = /*[[${currentUser?.email}]]*/ '';
+</script>
+<script>
+const messagesEl = document.getElementById('chatMessages');
+
+function scrollToBottom() {
+  if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+scrollToBottom();
+
+function appendMessage(msg) {
+  const isMine = msg.mine || msg.senderEmail === MY_EMAIL;
+  const div = document.createElement('div');
+  div.className = 'chat-message ' + (isMine ? 'mine' : 'theirs');
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-message-bubble';
+  bubble.textContent = msg.content || msg.message || '';
+  const meta = document.createElement('div');
+  meta.className = 'chat-message-meta';
+  meta.textContent = msg.senderName || '';
+  div.appendChild(bubble);
+  div.appendChild(meta);
+  messagesEl.appendChild(div);
+  scrollToBottom();
+}
+
+if (CHAT_ID && JWT_TOKEN) {
+  const client = new StompJs.Client({
+    brokerURL: 'ws://' + location.host + '/ws',
+    connectHeaders: { Authorization: 'Bearer ' + JWT_TOKEN },
+    reconnectDelay: 5000,
+    onConnect: function() {
+      client.subscribe('/topic/chats/' + CHAT_ID + '/messages', function(frame) {
+        try {
+          const msg = JSON.parse(frame.body);
+          appendMessage(msg);
+        } catch(e) {}
+      });
+    },
+    onStompError: function(frame) {
+      console.warn('STOMP error', frame);
+    }
+  });
+  client.activate();
+}
+
+function sendMessage() {
+  const input = document.getElementById('msgInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  fetch('/api/chats/' + CHAT_ID + '/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: text })
+  }).catch(function(e) { console.warn('Send error', e); });
+  input.value = '';
+}
+</script>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

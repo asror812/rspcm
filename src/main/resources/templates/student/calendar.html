@@ -29,17 +29,59 @@
     </header>
     <main class="page-content">
       <div class="page-header">
-        <h1>Practice Calendar</h1>
-        <p>Your practice journal and logbook entries</p>
+        <h1>Exam Calendar</h1>
+        <p>All your exams ordered by date</p>
       </div>
+
+      <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}">Error</span>
+      </div>
+
       <div class="card">
-        <div class="card-body">
+        <div class="card-header">
+          <span class="card-title">Upcoming Exams</span>
+          <span class="badge badge-muted" th:text="${exams?.totalElements ?: 0} + ' total'">0 total</span>
+        </div>
+        <div class="table-wrapper" th:if="${exams != null and !exams.isEmpty()}">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Subject</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>My Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="exam : ${exams}">
+                <td>
+                  <a th:href="@{/student/exams/{id}(id=${exam.id})}" style="color:var(--primary);font-weight:500;"
+                     th:text="${exam.title}">Title</a>
+                </td>
+                <td><span class="badge badge-primary" th:text="${exam.type}">TYPE</span></td>
+                <td th:text="${exam.subject?.name ?: '-'}">Subject</td>
+                <td th:text="${exam.startAt != null ? #temporals.format(exam.startAt, 'dd MMM yyyy HH:mm') : '-'}">-</td>
+                <td th:text="${exam.endAt != null ? #temporals.format(exam.endAt, 'dd MMM yyyy HH:mm') : '-'}">-</td>
+                <td>
+                  <span class="badge"
+                        th:classappend="${exam.myStatus == 'NOT_STARTED'} ? 'badge-muted' :
+                                        (${exam.myStatus == 'IN_PROGRESS'} ? 'badge-warning' :
+                                        (${exam.myStatus == 'SUBMITTED'} ? 'badge-primary' : 'badge-success'))"
+                        th:text="${exam.myStatus ?: 'NOT_STARTED'}">NOT_STARTED</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-body" th:unless="${exams != null and !exams.isEmpty()}">
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
               <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
-            <p>Your practice calendar shows journal entries and logbook records. Use the practice journal API to add entries.</p>
+            <p>No exams found. Your calendar is clear!</p>
           </div>
         </div>
       </div>

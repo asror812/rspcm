@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${editMode} ? 'Edit Subject — RSPCM Admin' : 'New Subject — RSPCM Admin'">Subject — RSPCM Admin</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('subjects')}"></div>
+
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title" th:text="${editMode} ? 'Edit Subject' : 'New Subject'">Subject</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'AD'}">AD</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <h1 th:text="${editMode} ? 'Edit Subject' : 'New Subject'">Subject</h1>
+        <a th:href="@{/admin/subjects}" class="btn btn-secondary">&larr; Back to Subjects</a>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <div class="card" style="max-width:600px;">
+        <div class="card-header">
+          <span class="card-title" th:text="${editMode} ? 'Edit Subject' : 'Create Subject'">Subject Form</span>
+        </div>
+        <div class="card-body">
+          <form th:action="${editMode} ? @{/admin/subjects/{id}(id=${subject?.id})} : @{/admin/subjects}" method="post">
+
+            <div style="margin-bottom:1rem;">
+              <label style="display:block;font-weight:500;margin-bottom:0.4rem;">
+                Name <span style="color:var(--destructive)">*</span>
+              </label>
+              <input type="text" name="name" required
+                     th:value="${subject?.name}"
+                     style="width:100%;padding:0.55rem 0.85rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;outline:none;"
+                     placeholder="e.g. Mathematics"/>
+            </div>
+
+            <div style="margin-bottom:1.5rem;">
+              <label style="display:block;font-weight:500;margin-bottom:0.4rem;">Description</label>
+              <textarea name="description" rows="4"
+                        style="width:100%;padding:0.55rem 0.85rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;outline:none;resize:vertical;"
+                        placeholder="Optional description of the subject..."
+                        th:text="${subject?.description}"></textarea>
+            </div>
+
+            <div style="display:flex;gap:0.75rem;">
+              <button type="submit" class="btn btn-primary"
+                      th:text="${editMode} ? 'Save Changes' : 'Create Subject'">Submit</button>
+              <a th:href="@{/admin/subjects}" class="btn btn-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

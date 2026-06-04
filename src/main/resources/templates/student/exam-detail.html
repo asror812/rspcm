@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Detail — RSPCM Student</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/student-sidebar :: studentSidebar('exams')}"></div>
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title" th:text="${exam?.title ?: 'Exam Detail'}">Exam Detail</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'ST'}">ST</div>
+      </div>
+    </header>
+    <main class="page-content">
+      <div class="page-header">
+        <h1 th:text="${exam?.title ?: 'Exam'}">Exam</h1>
+        <a th:href="@{/student/exams}" class="btn btn-secondary">&larr; Back to Exams</a>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <div th:if="${exam != null}">
+        <!-- Exam Info Card -->
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header">
+            <span class="card-title">Exam Information</span>
+            <span class="badge badge-primary" th:text="${exam.type}">TYPE</span>
+          </div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+              <div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.25rem;">Subject</div>
+                <div style="font-weight:500;" th:text="${exam.subject?.name ?: '-'}">-</div>
+              </div>
+              <div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.25rem;">Start Date</div>
+                <div style="font-weight:500;" th:text="${exam.startAt != null ? #temporals.format(exam.startAt, 'dd MMM yyyy HH:mm') : '-'}">-</div>
+              </div>
+              <div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.25rem;">End Date</div>
+                <div style="font-weight:500;" th:text="${exam.endAt != null ? #temporals.format(exam.endAt, 'dd MMM yyyy HH:mm') : '-'}">-</div>
+              </div>
+              <div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.25rem;">Max Score</div>
+                <div style="font-weight:500;" th:text="${exam.maxScore ?: '-'}">-</div>
+              </div>
+              <div th:if="${exam.type?.name() == 'QUESTION'}">
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.25rem;">Time Limit (min)</div>
+                <div style="font-weight:500;" th:text="${exam.taskLimit ?: 'Unlimited'}">-</div>
+              </div>
+            </div>
+            <div th:if="${exam.description}" style="margin-top:1rem;">
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.25rem;">Description</div>
+              <div th:text="${exam.description}">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUESTION type exam -->
+        <div th:if="${exam.type?.name() == 'QUESTION'}" class="card">
+          <div class="card-header">
+            <span class="card-title">My Attempt</span>
+          </div>
+          <div class="card-body">
+            <div th:if="${myAttempt != null}">
+              <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                <div>
+                  <span style="font-size:0.75rem;color:var(--text-muted);">Status: </span>
+                  <span class="badge"
+                        th:classappend="${myAttempt.status?.name() == 'STARTED'} ? 'badge-warning' :
+                                        (${myAttempt.status?.name() == 'SUBMITTED'} ? 'badge-primary' : 'badge-success')"
+                        th:text="${myAttempt.status}">STATUS</span>
+                </div>
+                <div th:if="${myAttempt.totalScore != null}">
+                  <span style="font-size:0.75rem;color:var(--text-muted);">Score: </span>
+                  <strong th:text="${myAttempt.totalScore}">0</strong>
+                  <span th:if="${exam.maxScore != null}" th:text="' / ' + ${exam.maxScore}"> / 100</span>
+                </div>
+              </div>
+              <div th:if="${myAttempt.status?.name() == 'STARTED'}">
+                <a th:href="@{/student/exams/{id}/take(id=${exam.id})}" class="btn btn-primary">Continue Exam</a>
+              </div>
+            </div>
+            <div th:unless="${myAttempt != null}" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+              <p style="color:var(--text-muted);margin:0;">You have not started this exam yet.</p>
+              <form th:action="@{/student/exams/{id}/start(id=${exam.id})}" method="post">
+                <button type="submit" class="btn btn-primary">Start Exam</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRACTICE type exam -->
+        <div th:if="${exam.type?.name() == 'PRACTICE'}">
+          <!-- My Participation -->
+          <div class="card" style="margin-bottom:1rem;" th:if="${myParticipation != null}">
+            <div class="card-header">
+              <span class="card-title">My Participation</span>
+              <span class="badge badge-success" th:text="${myParticipation.status}">STATUS</span>
+            </div>
+            <div class="card-body">
+              <div th:if="${myParticipation.practice != null}">
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.25rem;">Selected Practice</div>
+                <div style="font-weight:500;" th:text="${myParticipation.practice.name}">Practice</div>
+              </div>
+              <div style="margin-top:0.75rem;" th:if="${myParticipation.members != null and !myParticipation.members.isEmpty()}">
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.5rem;">Team Members</div>
+                <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                  <span th:each="member : ${myParticipation.members}" class="badge badge-muted"
+                        th:text="${member.user?.firstName + ' ' + member.user?.lastName + ' (' + member.role + ')'}">Member</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Available Practices to select -->
+          <div class="card" th:if="${myParticipation == null and practices != null and !practices.isEmpty()}">
+            <div class="card-header">
+              <span class="card-title">Available Practices</span>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>Practice</th><th>Work Mode</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                  <tr th:each="ep : ${practices}">
+                    <td th:text="${ep.practice?.name}">Practice</td>
+                    <td><span class="badge badge-muted" th:text="${ep.practice?.workMode}">MODE</span></td>
+                    <td>
+                      <form th:action="@{/student/select-theme/{examId}/practices/{epId}(examId=${exam.id},epId=${ep.id})}" method="post">
+                        <button type="submit" class="btn btn-sm btn-primary">Select</button>
+                      </form>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" th:if="${myParticipation == null and (practices == null or practices.isEmpty())}">
+            <div class="card-body">
+              <div class="empty-state">
+                <p>No practices available for this exam yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

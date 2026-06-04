@@ -13,6 +13,7 @@ import org.example.rspcm.model.enums.GroupLanguage;
 import org.example.rspcm.model.enums.RoleName;
 import org.example.rspcm.model.enums.SubmissionType;
 import org.example.rspcm.model.enums.WorkMode;
+import org.example.rspcm.dto.subject.SubjectRequest;
 import org.example.rspcm.repository.StudyGroupRepository;
 import org.example.rspcm.repository.SubjectRepository;
 import org.example.rspcm.repository.UserRepository;
@@ -20,6 +21,7 @@ import org.example.rspcm.service.AdminDashboardService;
 import org.example.rspcm.service.ExamService;
 import org.example.rspcm.service.PracticeService;
 import org.example.rspcm.service.StudyGroupService;
+import org.example.rspcm.service.SubjectService;
 import org.example.rspcm.service.UserService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,6 +50,7 @@ public class AdminWebController {
     private final StudyGroupService groupService;
     private final ExamService examService;
     private final PracticeService practiceService;
+    private final SubjectService subjectService;
     private final SubjectRepository subjectRepository;
     private final StudyGroupRepository groupRepository;
     private final UserRepository userRepository;
@@ -496,6 +499,85 @@ public class AdminWebController {
     public String deletePractice(@PathVariable Long id, @AuthenticationPrincipal User user) {
         practiceService.delete(id, user);
         return "redirect:/admin/practices";
+    }
+
+    // ========================
+    // SUBJECTS
+    // ========================
+
+    @GetMapping("/subjects")
+    public String subjects(Model model, @AuthenticationPrincipal User user) {
+        try {
+            model.addAttribute("subjects", subjectService.findAll(PageRequest.of(0, 100)));
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        model.addAttribute("currentUser", user);
+        model.addAttribute("activePage", "subjects");
+        return "admin/subjects";
+    }
+
+    @GetMapping("/subjects/new")
+    public String newSubjectForm(Model model, @AuthenticationPrincipal User user) {
+        model.addAttribute("editMode", false);
+        model.addAttribute("currentUser", user);
+        model.addAttribute("activePage", "subjects");
+        return "admin/subject-form";
+    }
+
+    @PostMapping("/subjects")
+    public String createSubject(@RequestParam String name,
+                                @RequestParam(required = false) String description,
+                                Model model, @AuthenticationPrincipal User user) {
+        try {
+            subjectService.createResponse(new SubjectRequest(name, description, null));
+            return "redirect:/admin/subjects";
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("editMode", false);
+            model.addAttribute("currentUser", user);
+            model.addAttribute("activePage", "subjects");
+            return "admin/subject-form";
+        }
+    }
+
+    @GetMapping("/subjects/{id}/edit")
+    public String editSubjectForm(@PathVariable Long id, Model model, @AuthenticationPrincipal User user) {
+        try {
+            model.addAttribute("subject", subjectService.findByIdResponse(id));
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        model.addAttribute("editMode", true);
+        model.addAttribute("currentUser", user);
+        model.addAttribute("activePage", "subjects");
+        return "admin/subject-form";
+    }
+
+    @PostMapping("/subjects/{id}")
+    public String updateSubject(@PathVariable Long id,
+                                @RequestParam String name,
+                                @RequestParam(required = false) String description,
+                                Model model, @AuthenticationPrincipal User user) {
+        try {
+            subjectService.update(id, new SubjectRequest(name, description, null));
+            return "redirect:/admin/subjects";
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            try {
+                model.addAttribute("subject", subjectService.findByIdResponse(id));
+            } catch (Exception ignored) {}
+            model.addAttribute("editMode", true);
+            model.addAttribute("currentUser", user);
+            model.addAttribute("activePage", "subjects");
+            return "admin/subject-form";
+        }
+    }
+
+    @PostMapping("/subjects/{id}/delete")
+    public String deleteSubject(@PathVariable Long id) {
+        try { subjectService.delete(id); } catch (Exception ignored) {}
+        return "redirect:/admin/subjects";
     }
 
     // ========================

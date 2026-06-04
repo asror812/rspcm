@@ -30,15 +30,57 @@
     <main class="page-content">
       <div class="page-header">
         <h1>Student Progress</h1>
-        <p>Track student progress across practices and exams</p>
+        <p>Track student progress across practice exams</p>
       </div>
+
+      <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}">Error</span>
+      </div>
+
       <div class="card">
-        <div class="card-body">
+        <div class="card-header">
+          <span class="card-title">Practice Exams</span>
+          <span class="badge badge-muted" th:text="${exams?.totalElements ?: 0} + ' exams'">0 exams</span>
+        </div>
+        <div class="table-wrapper" th:if="${exams != null and !exams.isEmpty()}">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>End Date</th>
+                <th>Practices</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="exam, stat : ${exams}">
+                <td th:text="${stat.count}">1</td>
+                <td th:text="${exam.title}">Title</td>
+                <td th:text="${exam.subject?.name ?: '-'}">Subject</td>
+                <td>
+                  <span class="badge"
+                        th:classappend="${exam.status?.name() == 'PUBLISHED'} ? 'badge-success' :
+                                        (${exam.status?.name() == 'DRAFT'} ? 'badge-muted' : 'badge-warning')"
+                        th:text="${exam.status}">STATUS</span>
+                </td>
+                <td th:text="${exam.endAt != null ? #temporals.format(exam.endAt, 'dd MMM yyyy HH:mm') : '-'}">-</td>
+                <td th:text="${exam.practices?.size() ?: 0}">0</td>
+                <td>
+                  <a th:href="@{/teacher/exams/{id}(id=${exam.id})}" class="btn btn-sm btn-secondary">View</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-body" th:unless="${exams != null and !exams.isEmpty()}">
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
             </svg>
-            <p>Progress tracking is available via the REST API. Use the practice submission and exam attempt endpoints.</p>
+            <p>No practice exams found. <a th:href="@{/teacher/exams/new}" style="color:var(--primary)">Create a practice exam.</a></p>
           </div>
         </div>
       </div>

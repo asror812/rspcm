@@ -60,13 +60,53 @@
         </div>
       </div>
 
+      <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}">Error</span>
+      </div>
+
       <div class="card">
-        <div class="card-body">
+        <div class="card-header">
+          <span class="card-title">My Exams Status</span>
+          <span class="badge badge-muted" th:text="${exams?.totalElements ?: 0} + ' exams'">0 exams</span>
+        </div>
+        <div class="table-wrapper" th:if="${exams != null and !exams.isEmpty()}">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Subject</th>
+                <th>End Date</th>
+                <th>My Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="exam : ${exams}">
+                <td th:text="${exam.title}">Title</td>
+                <td><span class="badge badge-primary" th:text="${exam.type}">TYPE</span></td>
+                <td th:text="${exam.subject?.name ?: '-'}">Subject</td>
+                <td th:text="${exam.endAt != null ? #temporals.format(exam.endAt, 'dd MMM yyyy HH:mm') : '-'}">-</td>
+                <td>
+                  <span class="badge"
+                        th:classappend="${exam.myStatus == 'NOT_STARTED'} ? 'badge-muted' :
+                                        (${exam.myStatus == 'IN_PROGRESS'} ? 'badge-warning' :
+                                        (${exam.myStatus == 'SUBMITTED'} ? 'badge-primary' : 'badge-success'))"
+                        th:text="${exam.myStatus ?: 'NOT_STARTED'}">NOT_STARTED</span>
+                </td>
+                <td>
+                  <a th:href="@{/student/exams/{id}(id=${exam.id})}" class="btn btn-sm btn-secondary">View</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-body" th:unless="${exams != null and !exams.isEmpty()}">
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
-            <p>No submissions found. <a th:href="@{/student/upload}" style="color:var(--primary)">Upload your first report.</a></p>
+            <p>No exams assigned yet. <a th:href="@{/student/upload}" style="color:var(--primary)">Upload your first report.</a></p>
           </div>
         </div>
       </div>

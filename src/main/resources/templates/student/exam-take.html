@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Take Exam — RSPCM Student</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/student-sidebar :: studentSidebar('exams')}"></div>
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+  <div class="main-content">
+
+    <!-- Sticky timer bar -->
+    <div class="exam-timer">
+      <div>
+        <span style="font-weight:600;" th:text="${exam?.title ?: 'Exam'}">Exam</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:1.5rem;">
+        <div class="timer-display" id="timerDisplay">--:--</div>
+        <form th:action="@{/student/exams/{id}/submit(id=${exam?.id})}" method="post"
+              onsubmit="return confirm('Submit your exam? This cannot be undone.')">
+          <button type="submit" class="btn btn-destructive">Submit Exam</button>
+        </form>
+      </div>
+    </div>
+
+    <main class="page-content" style="padding-top:1rem;">
+      <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <div th:if="${questions != null and !questions.isEmpty()}" id="questionsContainer">
+        <div th:each="q, stat : ${questions}" class="question-card">
+          <div class="question-text"
+               th:text="${stat.count + '. ' + q.questionText}">Question</div>
+          <div class="options-list" th:if="${q.type?.name() == 'CLOSED' or q.type?.name() == 'MULTIPLE_CHOICE'}">
+            <label th:each="opt : ${q.options}" class="option-label">
+              <input th:if="${q.type?.name() == 'CLOSED'}"
+                     type="radio"
+                     th:name="'q_' + ${q.id}"
+                     th:value="${opt.id}"
+                     th:checked="${q.selectedOptionIds != null and q.selectedOptionIds.contains(opt.id)}"
+                     onchange="saveAnswer(this, [[${q.id}]], [[${exam?.id}]], false)"/>
+              <input th:if="${q.type?.name() == 'MULTIPLE_CHOICE'}"
+                     type="checkbox"
+                     th:name="'q_' + ${q.id}"
+                     th:value="${opt.id}"
+                     th:checked="${q.selectedOptionIds != null and q.selectedOptionIds.contains(opt.id)}"
+                     onchange="saveAnswerMulti(this, [[${q.id}]], [[${exam?.id}]])"/>
+              <span th:text="${opt.text}">Option</span>
+            </label>
+          </div>
+          <div th:if="${q.type?.name() == 'OPEN'}" style="margin-top:0.5rem;">
+            <textarea class="chat-input" style="width:100%;min-height:80px;border-radius:var(--radius);padding:0.5rem;"
+                      th:text="${q.textAnswer}"
+                      onblur="saveTextAnswer(this, [[${q.id}]], [[${exam?.id}]])"
+                      placeholder="Write your answer here..."></textarea>
+          </div>
+          <div style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-muted);">
+            Score: <strong th:text="${q.score}">0</strong> points
+          </div>
+        </div>
+      </div>
+
+      <div th:unless="${questions != null and !questions.isEmpty()}" class="empty-state">
+        <p>No questions found for this exam.</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script th:inline="javascript">
+const EXAM_ID = /*[[${exam?.id}]]*/ 0;
+const REMAINING_SECONDS = /*[[${attempt?.remainingSeconds}]]*/ 0;
+</script>
+<script>
+// Timer
+let remaining = REMAINING_SECONDS && REMAINING_SECONDS < 9007199254740991 ? parseInt(REMAINING_SECONDS) : null;
+const timerEl = document.getElementById('timerDisplay');
+
+function updateTimer() {
+  if (remaining === null) { timerEl.textContent = 'No limit'; return; }
+  if (remaining <= 0) { timerEl.textContent = '0:00'; return; }
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  timerEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+  if (remaining <= 60) timerEl.style.color = 'var(--destructive)';
+  remaining--;
+}
+if (remaining !== null) {
+  updateTimer();
+  setInterval(updateTimer, 1000);
+}
+
+// Grouped multi-select state
+const multiState = {};
+
+function saveAnswer(input, examQuestionId, examId, isMulti) {
+  const selectedOptionIds = isMulti ? (multiState[examQuestionId] || []) : [parseInt(input.value)];
+  fetch('/api/exams/' + examId + '/questions/' + examQuestionId + '/answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ selectedOptionIds: selectedOptionIds, textAnswer: null })
+  }).catch(e => console.warn('Save answer error', e));
+}
+
+function saveAnswerMulti(input, examQuestionId, examId) {
+  if (!multiState[examQuestionId]) multiState[examQuestionId] = [];
+  const val = parseInt(input.value);
+  if (input.checked) {
+    if (!multiState[examQuestionId].includes(val)) multiState[examQuestionId].push(val);
+  } else {
+    multiState[examQuestionId] = multiState[examQuestionId].filter(v => v !== val);
+  }
+  fetch('/api/exams/' + examId + '/questions/' + examQuestionId + '/answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ selectedOptionIds: multiState[examQuestionId], textAnswer: null })
+  }).catch(e => console.warn('Save answer error', e));
+}
+
+function saveTextAnswer(textarea, examQuestionId, examId) {
+  const text = textarea.value.trim();
+  fetch('/api/exams/' + examId + '/questions/' + examQuestionId + '/answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ selectedOptionIds: [], textAnswer: text })
+  }).catch(e => console.warn('Save answer error', e));
+}
+</script>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

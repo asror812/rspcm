@@ -30,22 +30,113 @@
     <main class="page-content">
       <div class="page-header">
         <h1>My Team</h1>
-        <p>Your practice team members</p>
+        <p>Team invitations and participations</p>
       </div>
-      <div class="card">
-        <div class="card-body">
+
+      <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <!-- Invitations -->
+      <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-header">
+          <span class="card-title">Pending Invitations</span>
+          <span class="badge badge-warning" th:text="${invitations?.size() ?: 0} + ' pending'">0 pending</span>
+        </div>
+        <div class="card-body" th:if="${invitations != null and !invitations.isEmpty()}">
+          <div th:each="inv : ${invitations}"
+               style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;padding:0.75rem 0;border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-weight:500;" th:text="${inv.examTitle ?: 'Exam'}">Exam</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);"
+                   th:text="${'Practice: ' + (inv.practice?.name ?: '-')}">Practice</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);"
+                   th:text="${'Invited by: ' + (inv.invitedBy?.firstName ?: '') + ' ' + (inv.invitedBy?.lastName ?: '')}">Invited by</div>
+            </div>
+            <div style="display:flex;gap:0.5rem;">
+              <button class="btn btn-sm btn-primary"
+                      th:onclick="'acceptInvitation(' + ${inv.participationId} + ')'">Accept</button>
+              <button class="btn btn-sm btn-destructive"
+                      th:onclick="'declineInvitation(' + ${inv.participationId} + ')'">Decline</button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body" th:unless="${invitations != null and !invitations.isEmpty()}">
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
             </svg>
-            <p>Team information is managed through the practice participation API. Join a practice to form or join a team.</p>
+            <p>No pending team invitations.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Participations -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">My Practice Participations</span>
+          <span class="badge badge-muted" th:text="${participations?.size() ?: 0} + ' total'">0 total</span>
+        </div>
+        <div class="card-body" th:if="${participations != null and !participations.isEmpty()}">
+          <div th:each="p : ${participations}"
+               style="border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;">
+              <div>
+                <div style="font-weight:500;" th:text="${p.practice?.name ?: 'No practice selected'}">Practice</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.2rem;"
+                     th:text="'Exam ID: ' + ${p.examId}">Exam</div>
+              </div>
+              <span class="badge"
+                    th:classappend="${p.status?.name() == 'PRACTICE_CHOSEN'} ? 'badge-success' :
+                                    (${p.status?.name() == 'WAITING_MEMBERS'} ? 'badge-warning' : 'badge-muted')"
+                    th:text="${p.status}">STATUS</span>
+            </div>
+            <div th:if="${p.members != null and !p.members.isEmpty()}" style="margin-top:0.75rem;">
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.35rem;">Team Members</div>
+              <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                <span th:each="m : ${p.members}" class="badge badge-muted"
+                      th:text="${(m.user?.firstName ?: '') + ' ' + (m.user?.lastName ?: '') + ' — ' + m.role + ' (' + m.status + ')'}">Member</span>
+              </div>
+            </div>
+            <div th:if="${p.submission != null}" style="margin-top:0.75rem;padding:0.5rem;background:var(--muted);border-radius:var(--radius);font-size:0.8rem;">
+              <strong>Submission: </strong>
+              <span class="badge"
+                    th:classappend="${p.submission?.status?.name() == 'GRADED'} ? 'badge-success' :
+                                    (${p.submission?.status?.name() == 'RETURNED'} ? 'badge-destructive' : 'badge-warning')"
+                    th:text="${p.submission?.status}">STATUS</span>
+              <span th:if="${p.submission?.teacherComment}"
+                    th:text="' — ' + ${p.submission?.teacherComment}"> comment</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body" th:unless="${participations != null and !participations.isEmpty()}">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <p>You are not in any practice team yet. <a th:href="@{/student/select-theme}" style="color:var(--primary)">Select a practice theme</a> to get started.</p>
           </div>
         </div>
       </div>
     </main>
   </div>
 </div>
+<script>
+function acceptInvitation(participationId) {
+  fetch('/api/participations/' + participationId + '/accept', { method: 'POST' })
+    .then(() => location.reload())
+    .catch(e => alert('Error: ' + e));
+}
+function declineInvitation(participationId) {
+  fetch('/api/participations/' + participationId + '/decline', { method: 'POST' })
+    .then(() => location.reload())
+    .catch(e => alert('Error: ' + e));
+}
+</script>
 <script th:src="@{/js/dashboard.js}"></script>
 </body>
 </html>

@@ -10,6 +10,7 @@ import org.example.rspcm.repository.StudyGroupRepository;
 import org.example.rspcm.repository.SubjectRepository;
 import org.example.rspcm.service.AdminDashboardService;
 import org.example.rspcm.service.ExamService;
+import org.example.rspcm.service.PracticeParticipationService;
 import org.example.rspcm.service.PracticeSubmissionService;
 import org.example.rspcm.service.StudyGroupService;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -36,6 +39,7 @@ public class TeacherWebController {
     private final StudyGroupService studyGroupService;
     private final ExamService examService;
     private final PracticeSubmissionService submissionService;
+    private final PracticeParticipationService practiceParticipationService;
     private final SubjectRepository subjectRepository;
     private final StudyGroupRepository groupRepository;
 
@@ -83,6 +87,20 @@ public class TeacherWebController {
 
     @GetMapping("/teams")
     public String teams(Model model, @AuthenticationPrincipal User user) {
+        try {
+            // Get teacher's own exams then collect participations from them
+            var exams = examService.findAll(user, null, ExamType.PRACTICE, null, true, null, PageRequest.of(0, 50));
+            java.util.List<org.example.rspcm.dto.practice.PracticeParticipationResponse> allParticipations = new java.util.ArrayList<>();
+            for (var exam : exams) {
+                try {
+                    var page = practiceParticipationService.findAll(exam.id(), null, user, PageRequest.of(0, 100));
+                    allParticipations.addAll(page.getContent());
+                } catch (Exception ignored) {}
+            }
+            model.addAttribute("participations", allParticipations);
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
         model.addAttribute("currentUser", user);
         model.addAttribute("activePage", "teams");
         return "teacher/teams";
@@ -144,6 +162,12 @@ public class TeacherWebController {
 
     @GetMapping("/results")
     public String results(Model model, @AuthenticationPrincipal User user) {
+        try {
+            var exams = examService.findAll(user, null, ExamType.QUESTION, null, true, null, PageRequest.of(0, 20));
+            model.addAttribute("exams", exams);
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
         model.addAttribute("currentUser", user);
         model.addAttribute("activePage", "results");
         return "teacher/results";
@@ -151,6 +175,12 @@ public class TeacherWebController {
 
     @GetMapping("/progress")
     public String progress(Model model, @AuthenticationPrincipal User user) {
+        try {
+            var exams = examService.findAll(user, null, ExamType.PRACTICE, null, true, null, PageRequest.of(0, 20));
+            model.addAttribute("exams", exams);
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
         model.addAttribute("currentUser", user);
         model.addAttribute("activePage", "progress");
         return "teacher/progress";

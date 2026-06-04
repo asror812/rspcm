@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Results — RSPCM Teacher</title>
+  <title>My Exams — RSPCM Student</title>
   <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
   <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
 </head>
 <body>
 <div class="app-layout">
-  <div th:replace="~{fragments/teacher-sidebar :: teacherSidebar('results')}"></div>
+  <div th:replace="~{fragments/student-sidebar :: studentSidebar('exams')}"></div>
   <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
        onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
   <div class="main-content">
@@ -20,37 +20,39 @@
             <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
         </button>
-        <span class="topbar-title">Results</span>
+        <span class="topbar-title">My Exams</span>
       </div>
       <div class="topbar-right">
         <div class="topbar-avatar"
-             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'TC'}">TC</div>
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'ST'}">ST</div>
       </div>
     </header>
     <main class="page-content">
       <div class="page-header">
-        <h1>Results</h1>
-        <p>Student grades and exam results</p>
+        <h1>My Exams</h1>
+        <p>All exams assigned to you</p>
       </div>
 
       <div th:if="${error}" class="alert alert-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <span th:text="${error}">Error</span>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Question-Type Exams</span>
-          <span class="badge badge-muted" th:text="${exams?.totalElements ?: 0} + ' exams'">0 exams</span>
+          <span class="card-title">Exams</span>
+          <span class="badge badge-muted" th:text="${exams?.totalElements + ' total'}">0 total</span>
         </div>
-        <div class="table-wrapper" th:if="${exams != null and !exams.isEmpty()}">
-          <table>
+        <div class="table-wrapper">
+          <table th:if="${exams != null and !exams.isEmpty()}">
             <thead>
               <tr>
                 <th>#</th>
                 <th>Title</th>
                 <th>Subject</th>
-                <th>Status</th>
-                <th>End Date</th>
+                <th>Type</th>
+                <th>Dates</th>
+                <th>My Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -59,26 +61,30 @@
                 <td th:text="${stat.count}">1</td>
                 <td th:text="${exam.title}">Title</td>
                 <td th:text="${exam.subject?.name ?: '-'}">Subject</td>
+                <td><span class="badge badge-primary" th:text="${exam.type}">TYPE</span></td>
+                <td>
+                  <span th:text="${exam.startAt != null ? #temporals.format(exam.startAt, 'dd MMM') : '?'}">Start</span>
+                  <span> &rarr; </span>
+                  <span th:text="${exam.endAt != null ? #temporals.format(exam.endAt, 'dd MMM yyyy') : '?'}">End</span>
+                </td>
                 <td>
                   <span class="badge"
-                        th:classappend="${exam.status?.name() == 'PUBLISHED'} ? 'badge-success' :
-                                        (${exam.status?.name() == 'DRAFT'} ? 'badge-muted' : 'badge-warning')"
-                        th:text="${exam.status}">STATUS</span>
+                    th:classappend="${exam.myStatus == 'NOT_STARTED'} ? 'badge-muted' :
+                                    (${exam.myStatus == 'IN_PROGRESS'} ? 'badge-warning' :
+                                    (${exam.myStatus == 'SUBMITTED'} ? 'badge-primary' : 'badge-success'))"
+                    th:text="${exam.myStatus ?: 'NOT_STARTED'}">NOT_STARTED</span>
                 </td>
-                <td th:text="${exam.endAt != null ? #temporals.format(exam.endAt, 'dd MMM yyyy HH:mm') : '-'}">-</td>
                 <td>
-                  <a th:href="@{/teacher/exams/{id}(id=${exam.id})}" class="btn btn-sm btn-secondary">View Attempts</a>
+                  <a th:href="@{/student/exams/{id}(id=${exam.id})}" class="btn btn-sm btn-secondary">View</a>
                 </td>
               </tr>
             </tbody>
           </table>
-        </div>
-        <div class="card-body" th:unless="${exams != null and !exams.isEmpty()}">
-          <div class="empty-state">
+          <div th:unless="${exams != null and !exams.isEmpty()}" class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
             </svg>
-            <p>No question-type exams found. <a th:href="@{/teacher/exams/new}" style="color:var(--primary)">Create an exam.</a></p>
+            <p>No exams assigned to you yet.</p>
           </div>
         </div>
       </div>

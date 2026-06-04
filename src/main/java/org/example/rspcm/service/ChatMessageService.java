@@ -114,6 +114,7 @@ public class ChatMessageService {
     @Transactional(readOnly = true)
     public List<ChatSummaryResponse> getMyChats(String name) {
         List<Chat> chats = chatRepository.findAllByMemberIdentifier(name);
+        if (chats.isEmpty()) return List.of();
         Set<Long> chatIds = chats.stream().map(Chat::getId).collect(Collectors.toSet());
 
         Map<Long, Long> memberCounts = chatMemberRepository.countMembersByChatIds(chatIds).stream()

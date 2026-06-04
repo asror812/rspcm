@@ -66,25 +66,49 @@
         <h1>Upload Report</h1>
         <p>Submit your practice report</p>
       </div>
-      <div class="card" style="max-width:640px;">
-        <div class="card-header">
-          <span class="card-title">Submit Report</span>
+
+      <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <div th:if="${participations != null and !participations.isEmpty()}">
+        <div th:each="p : ${participations}" th:if="${p.status?.name() == 'PRACTICE_CHOSEN' and p.submission == null}"
+             class="card" style="max-width:680px;margin-bottom:1.5rem;">
+          <div class="card-header">
+            <span class="card-title" th:text="${p.practice?.name ?: 'Submit Report'}">Submit Report</span>
+            <span class="badge badge-success" th:text="${p.status}">STATUS</span>
+          </div>
+          <div class="card-body">
+            <form th:action="@{/student/upload/{id}(id=${p.participationId})}" method="post">
+              <div style="margin-bottom:1rem;">
+                <label style="display:block;font-weight:500;margin-bottom:0.4rem;">Text Answer</label>
+                <textarea name="textAnswer" class="chat-input"
+                          style="width:100%;min-height:100px;border-radius:var(--radius);padding:0.5rem 0.75rem;border:1px solid var(--border);"
+                          placeholder="Write your practice report or answer here..."></textarea>
+              </div>
+              <div style="margin-bottom:1rem;">
+                <label style="display:block;font-weight:500;margin-bottom:0.4rem;">File URL (optional)</label>
+                <input type="text" name="fileUrl" class="chat-input"
+                       style="width:100%;border-radius:var(--radius);padding:0.5rem 0.75rem;border:1px solid var(--border);"
+                       placeholder="https://drive.google.com/... or other file link"/>
+              </div>
+              <button type="submit" class="btn btn-primary">Submit Report</button>
+            </form>
+          </div>
         </div>
+      </div>
+
+      <div class="card" th:unless="${participations != null and participations.stream().anyMatch(p -> p.status?.name() == 'PRACTICE_CHOSEN' and p.submission == null)}">
         <div class="card-body">
-          <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+          <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <polyline points="16 16 12 12 8 16"/>
               <line x1="12" y1="12" x2="12" y2="21"/>
               <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
             </svg>
-            <p>Click to upload or drag and drop</p>
-            <p class="upload-hint">PDF, DOC, DOCX up to 50MB</p>
-            <input id="fileInput" type="file" style="display:none" accept=".pdf,.doc,.docx"/>
+            <p>No participations ready for submission.
+              <a th:href="@{/student/select-theme}" style="color:var(--primary)">Select a practice theme</a> first.</p>
           </div>
-          <p style="margin-top:1rem;font-size:0.875rem;color:var(--text-muted)">
-            To upload your practice report, use the REST API endpoint:
-            <code style="background:var(--muted);padding:0.1rem 0.3rem;border-radius:3px;font-size:0.8rem">POST /api/practice-submissions</code>
-          </p>
         </div>
       </div>
     </main>

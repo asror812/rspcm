@@ -954,3 +954,36 @@ tbody td {
     padding: 1.75rem 1.25rem;
   }
 }
+
+/* ======================== */
+/* Chat                     */
+/* ======================== */
+.chat-layout { display: grid; grid-template-columns: 300px 1fr; gap: 0; height: calc(100vh - 64px); }
+.chat-sidebar { border-right: 1px solid var(--border); overflow-y: auto; background: var(--card); }
+.chat-item { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; text-decoration: none; color: var(--text); }
+.chat-item:hover, .chat-item.active { background: var(--muted); }
+.chat-item-title { font-weight: 500; font-size: 0.875rem; }
+.chat-item-last { font-size: 0.75rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-main { display: flex; flex-direction: column; height: 100%; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.chat-message { display: flex; flex-direction: column; max-width: 70%; }
+.chat-message.mine { align-self: flex-end; align-items: flex-end; }
+.chat-message.theirs { align-self: flex-start; align-items: flex-start; }
+.chat-message-bubble { padding: 0.5rem 0.85rem; border-radius: 1rem; font-size: 0.875rem; line-height: 1.4; }
+.chat-message.mine .chat-message-bubble { background: var(--primary); color: white; border-bottom-right-radius: 0.25rem; }
+.chat-message.theirs .chat-message-bubble { background: var(--muted); color: var(--text); border-bottom-left-radius: 0.25rem; }
+.chat-message-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; }
+.chat-input-row { padding: 0.75rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.5rem; background: var(--card); }
+.chat-input { flex: 1; padding: 0.55rem 0.85rem; border: 1px solid var(--border); border-radius: 1.5rem; font-size: 0.875rem; outline: none; }
+.chat-input:focus { border-color: var(--primary); }
+
+/* ======================== */
+/* Exam Take                */
+/* ======================== */
+.question-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.25rem; margin-bottom: 1rem; }
+.question-text { font-weight: 500; margin-bottom: 0.75rem; }
+.options-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.option-label { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; font-size: 0.875rem; }
+.option-label:has(input:checked) { border-color: var(--primary); background: rgba(99,102,241,.06); }
+.exam-timer { position: sticky; top: 0; background: var(--card); border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+.timer-display { font-size: 1.1rem; font-weight: 600; color: var(--destructive); }
