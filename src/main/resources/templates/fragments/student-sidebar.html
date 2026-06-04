@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Student Sidebar Fragment -->
+<nav th:fragment="studentSidebar(activePage)" class="sidebar">
+
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l6 2.67V11c0 3.87-2.67 7.5-6 8.93C8.67 18.5 6 14.87 6 11V7.67L12 5z"/>
+      </svg>
+    </div>
+    <div>
+      <div class="sidebar-logo-text">RSPCM</div>
+      <div class="sidebar-logo-sub">Student Panel</div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-title">Main</div>
+
+    <a th:href="@{/student/dashboard}"
+       th:classappend="${activePage == 'dashboard'} ? 'active' : ''"
+       class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Dashboard
+    </a>
+
+    <div class="nav-section-title">Practice</div>
+
+    <a th:href="@{/student/select-theme}"
+       th:classappend="${activePage == 'select-theme'} ? 'active' : ''"
+       class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Select Theme
+    </a>
+
+    <a th:href="@{/student/teams}"
+       th:classappend="${activePage == 'teams'} ? 'active' : ''"
+       class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      My Team
+    </a>
+
+    <a th:href="@{/student/calendar}"
+       th:classappend="${activePage == 'calendar'} ? 'active' : ''"
+       class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      Calendar
+    </a>
+
+    <div class="nav-section-title">Reports</div>
+
+    <a th:href="@{/student/reports}"
+       th:classappend="${activePage == 'reports'} ? 'active' : ''"
+       class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      My Reports
+    </a>
+
+    <a th:href="@{/student/upload}"
+       th:classappend="${activePage == 'upload'} ? 'active' : ''"
+       class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 16 12 12 8 16"/>
+        <line x1="12" y1="12" x2="12" y2="21"/>
+        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+      </svg>
+      Upload Report
+    </a>
+
+    <a th:href="@{/student/status}"
+       th:classappend="${activePage == 'status'} ? 'active' : ''"
+       class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      Submission Status
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar"
+           th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'ST'}">ST</div>
+      <div>
+        <div class="user-name"
+             th:text="${currentUser != null ? currentUser.firstName + ' ' + currentUser.lastName : 'Student'}">Student</div>
+        <div class="user-role">Student</div>
+      </div>
+    </div>
+    <a href="/logout" class="logout-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Sign Out
+    </a>
+  </div>
+
+</nav>
+
+</body>
+</html>

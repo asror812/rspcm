@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reports — RSPCM Teacher</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/teacher-sidebar :: teacherSidebar('reports')}"></div>
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title">Reports</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'TC'}">TC</div>
+      </div>
+    </header>
+    <main class="page-content">
+      <div class="page-header">
+        <h1>Reports</h1>
+        <p>Student submission reports</p>
+      </div>
+      <div th:if="${error}" class="alert alert-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Submission Reports</span>
+          <span class="badge badge-muted" th:text="${reports?.totalElements + ' total'}">0 total</span>
+        </div>
+        <div class="table-wrapper">
+          <table th:if="${reports != null and !reports.isEmpty()}">
+            <thead>
+              <tr>
+                <th>Exam</th>
+                <th>Groups</th>
+                <th>Student</th>
+                <th>Status</th>
+                <th>Submitted At</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="report : ${reports}">
+                <td th:text="${report.examTitle}">Exam</td>
+                <td>
+                  <span th:each="gn : ${report.groupNames}" class="badge badge-muted" style="margin-right:2px" th:text="${gn}">Group</span>
+                </td>
+                <td>
+                  <span th:if="${report.submittedBy != null}"
+                        th:text="${report.submittedBy.firstName + ' ' + report.submittedBy.lastName}">Student</span>
+                  <span th:unless="${report.submittedBy != null}" class="badge badge-muted">Unknown</span>
+                </td>
+                <td>
+                  <span class="badge"
+                        th:classappend="${report.status?.name() == 'GRADED'} ? 'badge-success' : (${report.status?.name() == 'SUBMITTED'} ? 'badge-warning' : (${report.status?.name() == 'RETURNED'} ? 'badge-destructive' : 'badge-muted'))"
+                        th:text="${report.status}">STATUS</span>
+                </td>
+                <td th:text="${report.submittedAt != null ? #temporals.format(report.submittedAt, 'dd MMM yyyy HH:mm') : '-'}">Date</td>
+              </tr>
+            </tbody>
+          </table>
+          <div th:unless="${reports != null and !reports.isEmpty()}" class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>No reports yet</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

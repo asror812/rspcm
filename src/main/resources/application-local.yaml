@@ -4,9 +4,9 @@ server:
   
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/db
-    username: postgres
-    password: 123
+    url: jdbc:postgresql://localhost:5432/rspcm
+    username: asror
+    password: qwerty3875671
 
   jpa:
     hibernate:
@@ -32,7 +32,7 @@ spring:
 
 app:
   jwt:
-    secret: local-dev-jwt-secret-change-me
+    secret: local-dev-jwt-secret-change-me-12
     expiration-minutes: 120
   upload-dir: uploads
   firebase:

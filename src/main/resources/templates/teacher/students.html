@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Students — RSPCM Teacher</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/teacher-sidebar :: teacherSidebar('students')}"></div>
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title">Students</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'TC'}">TC</div>
+      </div>
+    </header>
+    <main class="page-content">
+      <div class="page-header">
+        <h1>Students</h1>
+        <p>Students in your groups</p>
+      </div>
+      <div th:if="${error}" class="alert alert-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+      <div th:if="${groups != null and !groups.isEmpty()}">
+        <div th:each="group : ${groups}" class="card" style="margin-bottom:1rem;">
+          <div class="card-header">
+            <span class="card-title" th:text="${group.name}">Group Name</span>
+            <span class="badge badge-primary" th:text="${group.students?.size() + ' students'}">0</span>
+          </div>
+          <div class="table-wrapper">
+            <table th:if="${group.students != null and !group.students.isEmpty()}">
+              <thead>
+                <tr><th>Name</th><th>Email</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="student : ${group.students}">
+                  <td th:text="${student.firstName + ' ' + student.lastName}">Name</td>
+                  <td th:text="${student.email}">email</td>
+                </tr>
+              </tbody>
+            </table>
+            <div th:unless="${group.students != null and !group.students.isEmpty()}" class="empty-state" style="padding:1.5rem">
+              <p>No students in this group</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:unless="${groups != null and !groups.isEmpty()}" class="card">
+        <div class="card-body">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <p>No students found</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

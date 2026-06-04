@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Reports — RSPCM Student</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/student-sidebar :: studentSidebar('reports')}"></div>
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title">My Reports</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'ST'}">ST</div>
+      </div>
+    </header>
+    <main class="page-content">
+      <div class="page-header">
+        <h1>My Reports</h1>
+        <p>Your practice submission reports</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Submitted Reports</span>
+          <a th:href="@{/student/upload}" class="btn btn-primary btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Upload New
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <p>No reports submitted yet. <a th:href="@{/student/upload}" style="color:var(--primary)">Upload your first report.</a></p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

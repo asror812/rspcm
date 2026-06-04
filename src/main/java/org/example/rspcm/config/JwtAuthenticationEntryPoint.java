@@ -25,6 +25,15 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         log.error("Unauthorized error: {}", authException.getMessage());
 
+        String path = request.getServletPath();
+
+        // For MVC (non-API) routes, redirect to login page
+        if (!path.startsWith("/api/")) {
+            response.sendRedirect("/login");
+            return;
+        }
+
+        // For API routes, return JSON 401 response
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 

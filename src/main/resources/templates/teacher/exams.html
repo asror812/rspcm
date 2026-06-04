@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exams — RSPCM Teacher</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/teacher-sidebar :: teacherSidebar('exams')}"></div>
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title">Exams</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'TC'}">TC</div>
+      </div>
+    </header>
+    <main class="page-content">
+      <div class="page-header">
+        <h1>Exams</h1>
+        <p>Manage your exams</p>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            <p>Exam management is available via the REST API. See the <a th:href="@{/swagger-ui.html}" style="color:var(--primary)">API docs</a>.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

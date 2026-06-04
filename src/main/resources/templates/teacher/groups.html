@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Groups — RSPCM Teacher</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/teacher-sidebar :: teacherSidebar('groups')}"></div>
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title">My Groups</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'TC'}">TC</div>
+      </div>
+    </header>
+    <main class="page-content">
+      <div class="page-header">
+        <h1>My Groups</h1>
+        <p>Study groups assigned to you</p>
+      </div>
+      <div th:if="${error}" class="alert alert-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+      <div th:if="${groups != null and !groups.isEmpty()}" class="groups-grid">
+        <div th:each="group : ${groups}" class="group-card">
+          <div class="group-card-header">
+            <div class="group-name" th:text="${group.name}">Group Name</div>
+            <span class="badge badge-primary" th:text="${group.language}">LANG</span>
+          </div>
+          <div th:if="${group.description}" class="group-description" th:text="${group.description}">Description</div>
+          <div class="group-meta">
+            <div class="group-meta-item">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              <span th:text="${group.students?.size() + ' students'}">0 students</span>
+            </div>
+            <div class="group-meta-item">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span th:text="${group.subjects?.size() + ' subjects'}">0 subjects</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:unless="${groups != null and !groups.isEmpty()}" class="card">
+        <div class="card-body">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <p>No groups assigned</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>
