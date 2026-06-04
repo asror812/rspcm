@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Practice Detail — RSPCM Admin</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('practices')}"></div>
+
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title">Practice Detail</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'AD'}">AD</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <h1 th:text="${practice.name}">Practice Name</h1>
+        <div class="action-row">
+          <a th:href="@{/admin/practices}" class="btn btn-secondary">Back</a>
+          <a th:href="@{/admin/practices/{id}/edit(id=${practice.id})}" class="btn btn-primary">Edit</a>
+          <form th:action="@{/admin/practices/{id}/delete(id=${practice.id})}" method="post" style="display:inline">
+            <button type="submit" class="btn btn-destructive"
+                    onclick="return confirm('Delete this practice?')">Delete</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Details</span></div>
+        <div class="card-body" style="padding:1.5rem">
+          <div class="detail-grid">
+            <div class="detail-field">
+              <span class="detail-label">Name</span>
+              <span class="detail-value" th:text="${practice.name}">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Subject</span>
+              <span class="detail-value" th:text="${practice.subject?.name ?: '-'}">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Work Mode</span>
+              <span class="badge badge-primary" th:text="${practice.workMode}">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Scheduling Required</span>
+              <span th:if="${practice.calendarRequired}" class="badge badge-warning">Yes</span>
+              <span th:unless="${practice.calendarRequired}" class="badge badge-muted">No</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Created By</span>
+              <span class="detail-value" th:text="${practice.createdBy != null ? practice.createdBy.firstName + ' ' + practice.createdBy.lastName : '-'}">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Submission Types</span>
+              <div>
+                <span th:each="st : ${practice.allowedSubmissionTypes}" class="badge badge-muted" style="margin-right:4px" th:text="${st}">TYPE</span>
+              </div>
+            </div>
+            <div class="detail-field" style="grid-column:1/-1">
+              <span class="detail-label">Description</span>
+              <span class="detail-value" th:text="${practice.description ?: '-'}">-</span>
+            </div>
+            <div class="detail-field" style="grid-column:1/-1" th:if="${practice.resourceUrl}">
+              <span class="detail-label">Resource URL</span>
+              <a th:href="${practice.resourceUrl}" th:text="${practice.resourceUrl}" target="_blank"
+                 style="color:var(--primary)">URL</a>
+            </div>
+            <div class="detail-field" style="grid-column:1/-1" th:if="${practice.requirements}">
+              <span class="detail-label">Requirements</span>
+              <span class="detail-value" style="white-space:pre-wrap" th:text="${practice.requirements}">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

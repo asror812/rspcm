@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${editMode} ? 'Edit Exam — RSPCM Teacher' : 'New Exam — RSPCM Teacher'">Exam Form</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/teacher-sidebar :: teacherSidebar('exams')}"></div>
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title" th:text="${editMode} ? 'Edit Exam' : 'New Exam'">Exam Form</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'TC'}">TC</div>
+      </div>
+    </header>
+    <main class="page-content">
+      <div class="page-header">
+        <h1 th:text="${editMode} ? 'Edit Exam' : 'New Exam'">Exam Form</h1>
+        <a th:href="@{/teacher/exams}" class="btn btn-secondary">Back to Exams</a>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" style="margin-bottom:1rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <div class="card form-page">
+        <div class="card-body" style="padding:1.5rem">
+          <form th:action="${editMode} ? @{/teacher/exams/{id}(id=${exam.id})} : @{/teacher/exams}" method="post">
+
+            <div class="form-section">
+              <div class="field">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" required
+                       th:value="${exam?.title}" placeholder="Exam title"/>
+              </div>
+
+              <div class="field">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3" placeholder="Optional description"
+                          th:text="${exam?.description}"></textarea>
+              </div>
+
+              <div class="field-group">
+                <div class="field">
+                  <label for="startAt">Start Date/Time</label>
+                  <input type="datetime-local" id="startAt" name="startAt" required
+                         th:value="${exam?.startAt != null ? #temporals.format(exam.startAt, 'yyyy-MM-dd''T''HH:mm') : ''}"/>
+                </div>
+                <div class="field">
+                  <label for="endAt">End Date/Time</label>
+                  <input type="datetime-local" id="endAt" name="endAt" required
+                         th:value="${exam?.endAt != null ? #temporals.format(exam.endAt, 'yyyy-MM-dd''T''HH:mm') : ''}"/>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <div class="field">
+                  <label for="maxScore">Max Score</label>
+                  <input type="number" id="maxScore" name="maxScore" required min="1"
+                         th:value="${exam?.maxScore}" placeholder="e.g. 100"/>
+                </div>
+                <div class="field">
+                  <label for="taskLimit">Task Limit</label>
+                  <input type="number" id="taskLimit" name="taskLimit" required min="1"
+                         th:value="${exam?.taskLimit}" placeholder="e.g. 10"/>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <div class="field">
+                  <label for="type">Exam Type</label>
+                  <select id="type" name="type" required>
+                    <option value="">Select type</option>
+                    <option th:each="t : ${examTypes}" th:value="${t}" th:text="${t}"
+                            th:selected="${exam?.type == t}">TYPE</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="subjectId">Subject</label>
+                  <select id="subjectId" name="subjectId" required>
+                    <option value="">Select subject</option>
+                    <option th:each="subject : ${allSubjects}" th:value="${subject.id}" th:text="${subject.name}"
+                            th:selected="${exam?.subject?.id == subject.id}">Subject</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Groups</label>
+                <div class="checkbox-group">
+                  <label th:each="group : ${allGroups}" class="checkbox-label">
+                    <input type="checkbox" name="groupIds" th:value="${group.id}"
+                           th:checked="${exam != null and exam.groups != null and exam.groups.![id].contains(group.id)}"/>
+                    <span th:text="${group.name}">Group</span>
+                  </label>
+                </div>
+                <div th:if="${allGroups == null or allGroups.isEmpty()}" class="badge badge-muted" style="margin-top:0.5rem">No groups found</div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" th:text="${editMode} ? 'Save Changes' : 'Create Exam'">Submit</button>
+              <a th:href="@{/teacher/exams}" class="btn btn-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

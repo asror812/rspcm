@@ -35,16 +35,63 @@
       <div class="page-header">
         <h1>Exams</h1>
         <p>All exams across the system</p>
+        <a th:href="@{/admin/exams/new}" class="btn btn-primary">+ New Exam</a>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span th:text="${error}">Error</span>
       </div>
 
       <div class="card">
-        <div class="card-body">
-          <div class="empty-state">
+        <div class="card-header">
+          <span class="card-title">All Exams</span>
+          <span class="badge badge-muted" th:text="${exams?.totalElements + ' total'}">0 total</span>
+        </div>
+        <div class="table-wrapper">
+          <table th:if="${exams != null and !exams.isEmpty()}">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Start</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="exam, stat : ${exams}">
+                <td th:text="${stat.count}">1</td>
+                <td th:text="${exam.title}">Title</td>
+                <td><span class="badge badge-primary" th:text="${exam.type}">TYPE</span></td>
+                <td th:text="${exam.subject?.name ?: '-'}">Subject</td>
+                <td>
+                  <span class="badge"
+                        th:classappend="${exam.status?.name() == 'PUBLISHED'} ? 'badge-success' : (${exam.status?.name() == 'DRAFT'} ? 'badge-muted' : 'badge-warning')"
+                        th:text="${exam.status}">STATUS</span>
+                </td>
+                <td th:text="${exam.startAt != null ? #temporals.format(exam.startAt, 'dd MMM yyyy HH:mm') : '-'}">Date</td>
+                <td>
+                  <div class="action-row">
+                    <a th:href="@{/admin/exams/{id}(id=${exam.id})}" class="btn btn-sm btn-secondary">View</a>
+                    <a th:href="@{/admin/exams/{id}/edit(id=${exam.id})}" class="btn btn-sm btn-primary">Edit</a>
+                    <form th:action="@{/admin/exams/{id}/delete(id=${exam.id})}" method="post" style="display:inline">
+                      <button type="submit" class="btn btn-sm btn-destructive"
+                              onclick="return confirm('Delete this exam?')">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div th:unless="${exams != null and !exams.isEmpty()}" class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M9 11l3 3L22 4"/>
               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
             </svg>
-            <p>Exam management is handled via the REST API. Use the <a th:href="@{/swagger-ui.html}" style="color:var(--primary)">API documentation</a> to manage exams.</p>
+            <p>No exams found. <a th:href="@{/admin/exams/new}" style="color:var(--primary)">Create your first exam.</a></p>
           </div>
         </div>
       </div>

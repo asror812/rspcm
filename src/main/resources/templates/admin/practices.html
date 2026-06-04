@@ -35,18 +35,61 @@
       <div class="page-header">
         <h1>Practices</h1>
         <p>All practice assignments across the system</p>
+        <a th:href="@{/admin/practices/new}" class="btn btn-primary">+ New Practice</a>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span th:text="${error}">Error</span>
       </div>
 
       <div class="card">
-        <div class="card-body">
-          <div class="empty-state">
+        <div class="card-header">
+          <span class="card-title">All Practices</span>
+          <span class="badge badge-muted" th:text="${practices?.totalElements + ' total'}">0 total</span>
+        </div>
+        <div class="table-wrapper">
+          <table th:if="${practices != null and !practices.isEmpty()}">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Subject</th>
+                <th>Work Mode</th>
+                <th>Submission Types</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="practice, stat : ${practices}">
+                <td th:text="${stat.count}">1</td>
+                <td th:text="${practice.name}">Name</td>
+                <td th:text="${practice.subject?.name ?: '-'}">Subject</td>
+                <td><span class="badge badge-primary" th:text="${practice.workMode}">MODE</span></td>
+                <td>
+                  <span th:each="st : ${practice.allowedSubmissionTypes}" class="badge badge-muted" style="margin-right:2px" th:text="${st}">TYPE</span>
+                </td>
+                <td>
+                  <div class="action-row">
+                    <a th:href="@{/admin/practices/{id}(id=${practice.id})}" class="btn btn-sm btn-secondary">View</a>
+                    <a th:href="@{/admin/practices/{id}/edit(id=${practice.id})}" class="btn btn-sm btn-primary">Edit</a>
+                    <form th:action="@{/admin/practices/{id}/delete(id=${practice.id})}" method="post" style="display:inline">
+                      <button type="submit" class="btn btn-sm btn-destructive"
+                              onclick="return confirm('Delete this practice?')">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div th:unless="${practices != null and !practices.isEmpty()}" class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
               <line x1="16" y1="13" x2="8" y2="13"/>
               <line x1="16" y1="17" x2="8" y2="17"/>
             </svg>
-            <p>Practice management is handled via the REST API. Use the <a th:href="@{/swagger-ui.html}" style="color:var(--primary)">API documentation</a> to manage practices.</p>
+            <p>No practices found. <a th:href="@{/admin/practices/new}" style="color:var(--primary)">Create your first practice.</a></p>
           </div>
         </div>
       </div>

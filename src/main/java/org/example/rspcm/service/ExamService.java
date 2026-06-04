@@ -145,7 +145,9 @@ public class ExamService {
         validateExamRequest(request);
         Subject subject = resolveSubject(request.subjectId());
 
-        validateTeacherSubjectAccess(user.getId(), subject.getId());
+        if (!isAdmin(user)) {
+            validateTeacherSubjectAccess(user.getId(), subject.getId());
+        }
 
         Exam exam = examMapper.toEntity(
                 request,
@@ -166,11 +168,15 @@ public class ExamService {
         Exam exam = examRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(messageService.get("error.exam.not.found", id)));
 
-        validateTeacherSubjectAccess(user.getId(), exam.getSubject() == null ? null : exam.getSubject().getId());
+        if (!isAdmin(user)) {
+            validateTeacherSubjectAccess(user.getId(), exam.getSubject() == null ? null : exam.getSubject().getId());
+        }
 
         Subject subject = resolveSubject(request.subjectId());
 
-        validateTeacherSubjectAccess(user.getId(), subject.getId());
+        if (!isAdmin(user)) {
+            validateTeacherSubjectAccess(user.getId(), subject.getId());
+        }
 
         examMapper.updateEntity(
                 exam,

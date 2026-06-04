@@ -35,6 +35,7 @@
       <div class="page-header">
         <h1>Students</h1>
         <p>Manage all student accounts</p>
+        <a th:href="@{/admin/users/new}" class="btn btn-primary">+ New User</a>
       </div>
 
       <div th:if="${error}" class="alert alert-error">
@@ -56,6 +57,7 @@
                 <th>Email</th>
                 <th>Roles</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -71,6 +73,16 @@
                 <td>
                   <span th:if="${user.enabled}" class="badge badge-success">Active</span>
                   <span th:unless="${user.enabled}" class="badge badge-muted">Inactive</span>
+                </td>
+                <td>
+                  <div class="action-row">
+                    <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn btn-sm btn-secondary">View</a>
+                    <a th:href="@{/admin/users/{id}/edit(id=${user.id})}" class="btn btn-sm btn-primary">Edit</a>
+                    <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" style="display:inline">
+                      <button type="submit" class="btn btn-sm btn-destructive"
+                              onclick="return confirm('Delete this user?')">Delete</button>
+                    </form>
+                  </div>
                 </td>
               </tr>
             </tbody>

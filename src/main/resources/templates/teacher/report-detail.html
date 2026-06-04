@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Report Detail — RSPCM Teacher</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/teacher-sidebar :: teacherSidebar('reports')}"></div>
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title">Report Detail</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'TC'}">TC</div>
+      </div>
+    </header>
+    <main class="page-content">
+      <div class="page-header">
+        <h1>Submission Detail</h1>
+        <a th:href="@{/teacher/reports}" class="btn btn-secondary">Back to Reports</a>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" style="margin-bottom:1rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <div th:if="${submission != null}">
+        <!-- Submission info -->
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header"><span class="card-title">Submission</span>
+            <span class="badge"
+                  th:classappend="${submission.status?.name() == 'GRADED'} ? 'badge-success' : (${submission.status?.name() == 'SUBMITTED'} ? 'badge-warning' : (${submission.status?.name() == 'RETURNED'} ? 'badge-destructive' : 'badge-muted'))"
+                  th:text="${submission.status}">STATUS</span>
+          </div>
+          <div class="card-body" style="padding:1.5rem">
+            <div class="detail-grid">
+              <div class="detail-field">
+                <span class="detail-label">Student</span>
+                <span class="detail-value"
+                      th:text="${submission.submittedBy != null ? submission.submittedBy.firstName + ' ' + submission.submittedBy.lastName : 'Unknown'}">-</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Submitted At</span>
+                <span class="detail-value" th:text="${submission.submittedAt != null ? #temporals.format(submission.submittedAt, 'dd MMM yyyy HH:mm') : '-'}">-</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Attempt Count</span>
+                <span class="detail-value" th:text="${submission.attemptCount}">0</span>
+              </div>
+              <div class="detail-field" th:if="${submission.fileUrl}">
+                <span class="detail-label">File URL</span>
+                <a th:href="${submission.fileUrl}" th:text="${submission.fileUrl}" target="_blank"
+                   style="color:var(--primary);word-break:break-all">URL</a>
+              </div>
+              <div class="detail-field" style="grid-column:1/-1" th:if="${submission.textAnswer}">
+                <span class="detail-label">Text Answer</span>
+                <span class="detail-value" style="white-space:pre-wrap" th:text="${submission.textAnswer}">-</span>
+              </div>
+              <div class="detail-field" style="grid-column:1/-1" th:if="${submission.teacherComment}">
+                <span class="detail-label">Teacher Comment</span>
+                <span class="detail-value" style="white-space:pre-wrap;color:var(--primary)" th:text="${submission.teacherComment}">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header"><span class="card-title">Actions</span></div>
+          <div class="card-body" style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+            <!-- Grade -->
+            <form th:action="@{/teacher/reports/{id}/grade(id=${submission.id})}" method="post">
+              <button type="submit" class="btn btn-primary"
+                      onclick="return confirm('Mark this submission as Graded?')">Mark as Graded</button>
+            </form>
+
+            <!-- Return with comment -->
+            <form th:action="@{/teacher/reports/{id}/return(id=${submission.id})}" method="post">
+              <div class="field" style="margin-bottom:0.75rem">
+                <label for="teacherComment">Return Comment</label>
+                <textarea id="teacherComment" name="teacherComment" rows="4"
+                          placeholder="Feedback for the student..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-secondary">Return to Student</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Attempt history -->
+        <div class="card" th:if="${history != null and !history.isEmpty()}">
+          <div class="card-header">
+            <span class="card-title">Attempt History</span>
+            <span class="badge badge-muted" th:text="${history.size() + ' attempts'}">0</span>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Submitted At</th>
+                  <th>Text Answer</th>
+                  <th>File URL</th>
+                  <th>Teacher Comment</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="attempt : ${history}">
+                  <td th:text="${attempt.attemptNumber}">1</td>
+                  <td th:text="${attempt.submittedAt != null ? #temporals.format(attempt.submittedAt, 'dd MMM yyyy HH:mm') : '-'}">Date</td>
+                  <td>
+                    <span th:if="${attempt.textAnswer}" th:text="${#strings.abbreviate(attempt.textAnswer, 80)}">-</span>
+                    <span th:unless="${attempt.textAnswer}" class="badge badge-muted">-</span>
+                  </td>
+                  <td>
+                    <a th:if="${attempt.fileUrl}" th:href="${attempt.fileUrl}" target="_blank"
+                       style="color:var(--primary)">Link</a>
+                    <span th:unless="${attempt.fileUrl}" class="badge badge-muted">-</span>
+                  </td>
+                  <td th:text="${attempt.teacherComment ?: '-'}">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

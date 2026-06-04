@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${editMode} ? 'Edit Group — RSPCM Admin' : 'New Group — RSPCM Admin'">Group Form</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('groups')}"></div>
+
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title" th:text="${editMode} ? 'Edit Group' : 'New Group'">Group Form</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'AD'}">AD</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <h1 th:text="${editMode} ? 'Edit Group' : 'New Group'">Group Form</h1>
+        <a th:href="@{/admin/groups}" class="btn btn-secondary">Back to Groups</a>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" style="margin-bottom:1rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:1.5rem">
+          <form th:action="${editMode} ? @{/admin/groups/{id}(id=${group.id})} : @{/admin/groups}" method="post">
+
+            <div class="form-section">
+              <div class="field-group">
+                <div class="field">
+                  <label for="name">Group Name</label>
+                  <input type="text" id="name" name="name" required
+                         th:value="${group?.name}" placeholder="Group name"/>
+                </div>
+                <div class="field">
+                  <label for="language">Language</label>
+                  <select id="language" name="language" required>
+                    <option th:each="lang : ${languages}" th:value="${lang}" th:text="${lang}"
+                            th:selected="${group?.language == lang}">LANG</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3" placeholder="Optional description"
+                          th:text="${group?.description}"></textarea>
+              </div>
+
+              <div class="field">
+                <label>Subjects</label>
+                <div class="checkbox-group">
+                  <label th:each="subject : ${allSubjects}" class="checkbox-label">
+                    <input type="checkbox" name="subjectIds" th:value="${subject.id}"
+                           th:checked="${group != null and group.subjects != null and group.subjects.![id].contains(subject.id)}"/>
+                    <span th:text="${subject.name}">Subject</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Teachers</label>
+                <div class="checkbox-group">
+                  <label th:each="teacher : ${allTeachers}" class="checkbox-label">
+                    <input type="checkbox" name="teacherIds" th:value="${teacher.id}"
+                           th:checked="${group != null and group.teachers != null and group.teachers.![id].contains(teacher.id)}"/>
+                    <span th:text="${teacher.firstName + ' ' + teacher.lastName}">Teacher</span>
+                  </label>
+                </div>
+                <div th:if="${allTeachers == null or allTeachers.isEmpty()}" class="badge badge-muted" style="margin-top:0.5rem">No teachers found</div>
+              </div>
+
+              <div class="field">
+                <label>Students</label>
+                <div class="checkbox-group">
+                  <label th:each="student : ${allStudents}" class="checkbox-label">
+                    <input type="checkbox" name="studentIds" th:value="${student.id}"
+                           th:checked="${group != null and group.students != null and group.students.![id].contains(student.id)}"/>
+                    <span th:text="${student.firstName + ' ' + student.lastName}">Student</span>
+                  </label>
+                </div>
+                <div th:if="${allStudents == null or allStudents.isEmpty()}" class="badge badge-muted" style="margin-top:0.5rem">No students found</div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" th:text="${editMode} ? 'Save Changes' : 'Create Group'">Submit</button>
+              <a th:href="@{/admin/groups}" class="btn btn-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${editMode} ? 'Edit User — RSPCM Admin' : 'New User — RSPCM Admin'">User Form — RSPCM Admin</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('students')}"></div>
+
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title" th:text="${editMode} ? 'Edit User' : 'New User'">User Form</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'AD'}">AD</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <h1 th:text="${editMode} ? 'Edit User' : 'New User'">User Form</h1>
+        <a th:href="@{/admin/students}" class="btn btn-secondary">Back to Students</a>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" style="margin-bottom:1rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <div class="card form-page">
+        <div class="card-body" style="padding:1.5rem">
+          <form th:action="${editMode} ? @{/admin/users/{id}(id=${u.id})} : @{/admin/users}" method="post">
+
+            <div class="form-section">
+              <div class="field-group">
+                <div class="field">
+                  <label for="firstName">First Name</label>
+                  <input type="text" id="firstName" name="firstName" required
+                         th:value="${u?.firstName}" placeholder="First name"/>
+                </div>
+                <div class="field">
+                  <label for="lastName">Last Name</label>
+                  <input type="text" id="lastName" name="lastName" required
+                         th:value="${u?.lastName}" placeholder="Last name"/>
+                </div>
+              </div>
+
+              <div th:unless="${editMode}" class="field-group">
+                <div class="field">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" name="email" required
+                         placeholder="email@example.com"/>
+                </div>
+                <div class="field">
+                  <label for="password">Password</label>
+                  <input type="password" id="password" name="password" required
+                         placeholder="Min 6 characters"/>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Roles</label>
+                <div class="checkbox-group">
+                  <label th:each="role : ${roles}" class="checkbox-label">
+                    <input type="checkbox" name="roles" th:value="${role}"
+                           th:checked="${u != null and u.roles != null and u.roles.contains(role.name())}"/>
+                    <span th:text="${#strings.replace(role.name(), 'ROLE_', '')}">ROLE</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="checkbox-label" style="width:fit-content">
+                  <input type="checkbox" name="enabled" value="true"
+                         th:checked="${u == null or u.enabled}"/>
+                  Account Enabled
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" th:text="${editMode} ? 'Save Changes' : 'Create User'">Submit</button>
+              <a th:href="@{/admin/students}" class="btn btn-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

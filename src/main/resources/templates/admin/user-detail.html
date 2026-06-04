@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Detail — RSPCM Admin</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('students')}"></div>
+
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title">User Detail</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'AD'}">AD</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <h1 th:text="${u.firstName + ' ' + u.lastName}">User Name</h1>
+        <div class="action-row">
+          <a th:href="@{/admin/students}" class="btn btn-secondary">Back</a>
+          <a th:href="@{/admin/users/{id}/edit(id=${u.id})}" class="btn btn-primary">Edit</a>
+          <form th:action="@{/admin/users/{id}/delete(id=${u.id})}" method="post" style="display:inline">
+            <button type="submit" class="btn btn-destructive"
+                    onclick="return confirm('Delete this user?')">Delete</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:1.5rem">
+          <div class="detail-grid">
+            <div class="detail-field">
+              <span class="detail-label">First Name</span>
+              <span class="detail-value" th:text="${u.firstName}">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Last Name</span>
+              <span class="detail-value" th:text="${u.lastName}">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Email</span>
+              <span class="detail-value" th:text="${u.email}">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Status</span>
+              <span th:if="${u.enabled}" class="badge badge-success">Active</span>
+              <span th:unless="${u.enabled}" class="badge badge-muted">Inactive</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Roles</span>
+              <div>
+                <span th:each="role : ${u.roles}" class="badge badge-primary" style="margin-right:4px"
+                      th:text="${#strings.replace(role, 'ROLE_', '')}">ROLE</span>
+              </div>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Deleted</span>
+              <span th:if="${u.deleted}" class="badge badge-destructive">Yes</span>
+              <span th:unless="${u.deleted}" class="badge badge-muted">No</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

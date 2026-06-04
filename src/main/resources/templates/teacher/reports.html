@@ -50,6 +50,7 @@
                 <th>Student</th>
                 <th>Status</th>
                 <th>Submitted At</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -69,6 +70,9 @@
                         th:text="${report.status}">STATUS</span>
                 </td>
                 <td th:text="${report.submittedAt != null ? #temporals.format(report.submittedAt, 'dd MMM yyyy HH:mm') : '-'}">Date</td>
+                <td>
+                  <a th:href="@{/teacher/reports/{id}(id=${report.submissionId})}" class="btn btn-sm btn-secondary">View</a>
+                </td>
               </tr>
             </tbody>
           </table>

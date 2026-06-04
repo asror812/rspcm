@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${editMode} ? 'Edit Practice — RSPCM Admin' : 'New Practice — RSPCM Admin'">Practice Form</title>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');</style>
+</head>
+<body>
+<div class="app-layout">
+
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('practices')}"></div>
+
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"
+       onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="sidebarToggle" class="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title" th:text="${editMode} ? 'Edit Practice' : 'New Practice'">Practice Form</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar"
+             th:text="${currentUser != null ? #strings.substring(currentUser.firstName, 0, 1) + #strings.substring(currentUser.lastName, 0, 1) : 'AD'}">AD</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <h1 th:text="${editMode} ? 'Edit Practice' : 'New Practice'">Practice Form</h1>
+        <a th:href="@{/admin/practices}" class="btn btn-secondary">Back to Practices</a>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" style="margin-bottom:1rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <div class="card form-page">
+        <div class="card-body" style="padding:1.5rem">
+          <form th:action="${editMode} ? @{/admin/practices/{id}(id=${practice.id})} : @{/admin/practices}" method="post">
+
+            <div class="form-section">
+              <div class="field">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required
+                       th:value="${practice?.name}" placeholder="Practice name"/>
+              </div>
+
+              <div class="field">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3" placeholder="Optional description"
+                          th:text="${practice?.description}"></textarea>
+              </div>
+
+              <div class="field-group">
+                <div class="field">
+                  <label for="resourceUrl">Resource URL</label>
+                  <input type="url" id="resourceUrl" name="resourceUrl"
+                         th:value="${practice?.resourceUrl}" placeholder="https://..."/>
+                </div>
+                <div class="field">
+                  <label for="subjectId">Subject</label>
+                  <select id="subjectId" name="subjectId">
+                    <option value="">Select subject</option>
+                    <option th:each="subject : ${allSubjects}" th:value="${subject.id}" th:text="${subject.name}"
+                            th:selected="${practice?.subject?.id == subject.id}">Subject</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="requirements">Requirements</label>
+                <textarea id="requirements" name="requirements" rows="4" placeholder="Practice requirements"
+                          th:text="${practice?.requirements}"></textarea>
+              </div>
+
+              <div class="field-group">
+                <div class="field">
+                  <label for="workMode">Work Mode</label>
+                  <select id="workMode" name="workMode" required>
+                    <option value="">Select work mode</option>
+                    <option th:each="wm : ${workModes}" th:value="${wm}" th:text="${wm}"
+                            th:selected="${practice?.workMode == wm}">MODE</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Scheduling Required</label>
+                  <label class="checkbox-label" style="width:fit-content;margin-top:0.4rem">
+                    <input type="checkbox" name="schedulingRequired" value="true"
+                           th:checked="${practice?.calendarRequired}"/>
+                    Require scheduling
+                  </label>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Allowed Submission Types</label>
+                <div class="checkbox-group">
+                  <label th:each="st : ${submissionTypes}" class="checkbox-label">
+                    <input type="checkbox" name="allowedSubmissionTypes" th:value="${st}"
+                           th:checked="${practice != null and practice.allowedSubmissionTypes != null and practice.allowedSubmissionTypes.contains(st)}"/>
+                    <span th:text="${st}">TYPE</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" th:text="${editMode} ? 'Save Changes' : 'Create Practice'">Submit</button>
+              <a th:href="@{/admin/practices}" class="btn btn-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>
