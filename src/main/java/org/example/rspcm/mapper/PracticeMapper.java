@@ -9,6 +9,7 @@ import org.example.rspcm.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Set;
 import org.example.rspcm.model.enums.SubmissionType;
 
@@ -29,7 +30,7 @@ public class PracticeMapper {
                 practice.getRequirements(),
                 practice.getWorkMode(),
                 practice.isSchedulingRequired(),
-                practice.getAllowedSubmissionTypes(),
+                new HashSet<>(practice.getAllowedSubmissionTypes()),
                 subject,
                 createdBy
         );
