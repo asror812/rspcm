@@ -88,6 +88,9 @@ public class ProfileService {
         }
         StudentProfile profile = studentProfileRepository.findByUserId(userId)
                 .orElseGet(() -> studentProfileRepository.save(StudentProfile.builder().user(getUser(userId)).build()));
+        User user = profile.getUser();
+        updateSelfEditableUserFieldsFromStudentRequest(user, request);
+        userRepository.save(user);
         studentProfileMapper.updateEntity(profile, request);
         return studentProfileMapper.toResponse(studentProfileRepository.save(profile));
     }
@@ -150,17 +153,49 @@ public class ProfileService {
     }
 
     private void updateSelfEditableUserFields(User user, TeacherSelfProfileUpdateRequest request) {
+        if (request.firstName() != null && !request.firstName().isBlank()) {
+            user.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null && !request.lastName().isBlank()) {
+            user.setLastName(request.lastName());
+        }
         if (request.email() != null && !request.email().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.email())) {
                 throw new ErrorMessageException(messageService.get("error.email.exists.other"), ErrorCodes.AlreadyExists);
             }
             user.setEmail(request.email());
         }
-
         if (request.phoneNumber() != null) {
             user.setPhoneNumber(request.phoneNumber());
         }
+        if (request.birthDate() != null) {
+            user.setBirthDate(request.birthDate());
+        }
+        if (request.newPassword() != null) {
+            if (request.currentPassword() == null
+                    || !passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+                throw new ErrorMessageException(messageService.get("error.password.current.wrong"), ErrorCodes.InvalidParams);
+            }
+            user.setPassword(passwordEncoder.encode(request.newPassword()));
+        }
+    }
 
+    private void updateSelfEditableUserFieldsFromStudentRequest(User user, StudentProfileUpdateRequest request) {
+        if (request.firstName() != null && !request.firstName().isBlank()) {
+            user.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null && !request.lastName().isBlank()) {
+            user.setLastName(request.lastName());
+        }
+        if (request.email() != null && !request.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.email())) {
+                throw new ErrorMessageException(messageService.get("error.email.exists.other"), ErrorCodes.AlreadyExists);
+            }
+            user.setEmail(request.email());
+        }
+        if (request.birthDate() != null) {
+            user.setBirthDate(request.birthDate());
+        }
         if (request.newPassword() != null) {
             if (request.currentPassword() == null
                     || !passwordEncoder.matches(request.currentPassword(), user.getPassword())) {

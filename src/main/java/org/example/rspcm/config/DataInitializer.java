@@ -338,7 +338,7 @@ public class DataInitializer implements CommandLineRunner {
                 .fileUrl("https://example.com/submissions/auto-seeded-1")
                 .submittedAt(LocalDateTime.now().minusDays(2))
                 .status(PracticeSubmissionStatus.GRADED)
-                .teacherComment("Auto-seeded: looks good")
+                .teacherComment("Работа выполнена в полном объёме, замечаний нет.")
                 .build();
         practiceSubmissionRepository.save(submission);
 

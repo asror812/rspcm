@@ -22,7 +22,8 @@ public class TeacherProfileMapper {
                 profile.getId(),
                 summaryMapper.toUserSummary(profile.getUser()),
                 profile.getAcademicDegree(),
-                subjects
+                subjects,
+                profile.getUser().getBirthDate()
         );
     }
 

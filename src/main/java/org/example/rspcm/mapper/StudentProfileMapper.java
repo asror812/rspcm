@@ -16,11 +16,14 @@ public class StudentProfileMapper {
                 profile.getId(),
                 summaryMapper.toUserSummary(profile.getUser()),
                 profile.getCourse(),
-                profile.getGroup() == null ? null : summaryMapper.toGroupSummary(profile.getGroup())
+                profile.getGroup() == null ? null : summaryMapper.toGroupSummary(profile.getGroup()),
+                profile.getUser().getBirthDate()
         );
     }
 
     public void updateEntity(StudentProfile profile, StudentProfileUpdateRequest request) {
-        profile.setCourse(request.course());
+        if (request.course() != null) {
+            profile.setCourse(request.course());
+        }
     }
 }

@@ -247,11 +247,10 @@ public class PracticeSubmissionService {
             validateStaffAccess(user, participation.getExam());
             return;
         }
-        boolean isMember = participationMemberRepository.existsByPracticeParticipationIdAndUserIdAndStatus(
-                participation.getId(),
-                user.getId(),
-                PracticeParticipationMemberStatus.ACCEPTED
-        );
+        boolean isMember = participationMemberRepository
+                .findByPracticeParticipationIdAndUserId(participation.getId(), user.getId())
+                .isPresent();
+
         if (!isMember) {
             throw new ErrorMessageException(messageService.get("error.no.access"), ErrorCodes.Forbidden);
         }
