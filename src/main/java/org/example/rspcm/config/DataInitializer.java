@@ -485,9 +485,9 @@ public class DataInitializer implements CommandLineRunner {
 
         // ── Practice 1: mixed diary activity ──────────────────────────────────
         Practice diaryPractice = practiceRepository.save(Practice.builder()
-                .name("Лабораторный дневник по физике")
-                .description("Наблюдение и фиксация результатов лабораторных опытов. " +
-                             "Каждый день записывайте ход работы, результаты измерений и выводы.")
+                .name("Практикум по физике: эксперименты и наблюдения")
+                .description("Проведение серии лабораторных опытов по физике. " +
+                             "Каждый день фиксируйте ход эксперимента, результаты измерений и выводы.")
                 .subject(physics)
                 .resourceUrl("https://example.com/physics/lab-diary")
                 .requirements("Ежедневные записи обязательны. Минимум 80 слов в день. " +
