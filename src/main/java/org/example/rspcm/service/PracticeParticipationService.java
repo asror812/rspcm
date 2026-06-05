@@ -592,6 +592,7 @@ public class PracticeParticipationService {
                         submission.getSubmittedAt(),
                         submission.getStatus(),
                         submission.getTeacherComment(),
+                        submission.getScore(),
                         submissionAttemptRepository.countBySubmissionId(submission.getId())
                 )
         );

@@ -49,4 +49,6 @@ public class PracticeSubmission {
 
     @Column(length = 2000)
     private String teacherComment;
+
+    private Integer score;
 }

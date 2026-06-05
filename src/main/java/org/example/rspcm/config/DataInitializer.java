@@ -348,6 +348,7 @@ public class DataInitializer implements CommandLineRunner {
                 .submittedAt(LocalDateTime.now().minusDays(2))
                 .status(PracticeSubmissionStatus.GRADED)
                 .teacherComment("Работа выполнена в полном объёме, замечаний нет.")
+                .score(88)
                 .build();
         practiceSubmissionRepository.save(submission);
 
@@ -564,7 +565,8 @@ public class DataInitializer implements CommandLineRunner {
                 .fileUrl("https://example.com/submissions/anvar-lab-report.pdf")
                 .submittedAt(LocalDateTime.now().minusDays(1))
                 .status(PracticeSubmissionStatus.GRADED)
-                .teacherComment("Отличная работа! Записи подробные, выводы обоснованы. Оценка: отлично.")
+                .teacherComment("Отличная работа! Записи подробные, выводы обоснованы.")
+                .score(95)
                 .build());
         practiceSubmissionAttemptRepository.save(PracticeSubmissionAttempt.builder()
                 .submission(sub1).attemptNumber(1)

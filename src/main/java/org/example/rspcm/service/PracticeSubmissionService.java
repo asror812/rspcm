@@ -169,6 +169,7 @@ public class PracticeSubmissionService {
 
         submission.setStatus(PracticeSubmissionStatus.GRADED);
         submission.setTeacherComment(request.teacherComment());
+        submission.setScore(request.score());
         PracticeSubmission saved = submissionRepository.save(submission);
 
         // Also stamp teacher comment on the latest attempt
@@ -336,6 +337,7 @@ public class PracticeSubmissionService {
                 submission.getSubmittedAt(),
                 submission.getStatus(),
                 submission.getTeacherComment(),
+                submission.getScore(),
                 attemptCount
         );
     }

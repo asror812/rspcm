@@ -16,6 +16,7 @@ public record PracticeSubmissionResponse(
         LocalDateTime submittedAt,
         PracticeSubmissionStatus status,
         String teacherComment,
+        Integer score,
         int attemptCount
 ) {
 }

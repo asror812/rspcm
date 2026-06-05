@@ -139,7 +139,7 @@ public class TeacherWebController {
     @PostMapping("/reports/{id}/grade")
     public String gradeSubmission(@PathVariable Long id, @AuthenticationPrincipal User user) {
         try {
-            submissionService.grade(id, new PracticeSubmissionReviewRequest(null), user);
+            submissionService.grade(id, new PracticeSubmissionReviewRequest(null, null), user);
         } catch (Exception ignored) {
         }
         return "redirect:/teacher/reports/" + id;
@@ -150,7 +150,7 @@ public class TeacherWebController {
                                     @RequestParam(required = false) String teacherComment,
                                     @AuthenticationPrincipal User user) {
         try {
-            submissionService.returnSubmission(id, new PracticeSubmissionReviewRequest(teacherComment), user);
+            submissionService.returnSubmission(id, new PracticeSubmissionReviewRequest(teacherComment, null), user);
         } catch (Exception ignored) {
         }
         return "redirect:/teacher/reports/" + id;
