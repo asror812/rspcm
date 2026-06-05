@@ -17,15 +17,18 @@ import org.example.rspcm.model.entity.ChatMember;
 import org.example.rspcm.model.entity.Practice;
 import org.example.rspcm.model.entity.PracticeParticipation;
 import org.example.rspcm.model.entity.PracticeParticipationMember;
+import org.example.rspcm.model.entity.PracticeLogbook;
+import org.example.rspcm.model.entity.PracticeLogbookEntry;
 import org.example.rspcm.model.entity.PracticeSubmission;
 import org.example.rspcm.model.entity.PracticeSubmissionAttempt;
 import org.example.rspcm.model.enums.ChatMemberRole;
-import org.example.rspcm.model.enums.ChatType;
 import org.example.rspcm.model.enums.GroupLanguage;
 import org.example.rspcm.model.enums.QuestionType;
 import org.example.rspcm.model.enums.RoleName;
 import org.example.rspcm.model.enums.ExamType;
 import org.example.rspcm.model.enums.ExamStatus;
+import org.example.rspcm.model.enums.LogbookStatus;
+import org.example.rspcm.model.enums.LogbookEntryStatus;
 import org.example.rspcm.model.enums.PracticeMemberRole;
 import org.example.rspcm.model.enums.PracticeParticipationMemberStatus;
 import org.example.rspcm.model.enums.PracticeParticipationStatus;
@@ -44,6 +47,8 @@ import org.example.rspcm.repository.ExamQuestionRepository;
 import org.example.rspcm.repository.PracticeRepository;
 import org.example.rspcm.repository.PracticeParticipationRepository;
 import org.example.rspcm.repository.PracticeParticipationMemberRepository;
+import org.example.rspcm.repository.PracticeJournalRepository;
+import org.example.rspcm.repository.PracticeLogbookEntryRepository;
 import org.example.rspcm.repository.PracticeSubmissionRepository;
 import org.example.rspcm.repository.PracticeSubmissionAttemptRepository;
 import org.example.rspcm.repository.ChatRepository;
@@ -62,6 +67,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
@@ -83,6 +89,8 @@ public class DataInitializer implements CommandLineRunner {
     private final PracticeParticipationMemberRepository practiceParticipationMemberRepository;
     private final PracticeSubmissionRepository practiceSubmissionRepository;
     private final PracticeSubmissionAttemptRepository practiceSubmissionAttemptRepository;
+    private final PracticeJournalRepository practiceJournalRepository;
+    private final PracticeLogbookEntryRepository practiceLogbookEntryRepository;
     private final ChatRepository chatRepository;
     private final ChatMemberRepository chatMemberRepository;
     private final GroupChatSyncService groupChatSyncService;
@@ -265,6 +273,7 @@ public class DataInitializer implements CommandLineRunner {
         attachPracticesToExam(practicalExam, List.of(practices.get(2), practices.get(3), practices.get(4)));
         seedPracticeParticipations(practicalExam);
         seedResubmissionScenario(practicalExam);
+        seedJournalScenarios();
         backfillMissingAttempts(practicalExam);
         backfillExamAndExamQuestionAuditData(getUser("admin@rspcm.local"));
     }
@@ -445,6 +454,210 @@ public class DataInitializer implements CommandLineRunner {
                 .submittedAt(LocalDateTime.now().minusDays(1))
                 .build()
         );
+    }
+
+    /**
+     * Scenario 1 — K1 group, diary practice:
+     *   Anvar   (k1Student1): 7 consecutive entries + GRADED submission
+     *   Alisher (k1Student2): 5 entries with two gaps + SUBMITTED submission
+     *   Axror   (k1Student3): 3 entries (first 3 days only) + RETURNED submission
+     *   Asror   (k1Student4): no diary entries, no submission
+     *
+     * Scenario 2 — separate practice, in-progress diary only:
+     *   Abror   (k1Student5): 7 consecutive daily entries, NO submission yet
+     */
+    private void seedJournalScenarios() {
+        final String JOURNAL_EXAM_TITLE = "Дневниковая практика по физике (K1)";
+        boolean alreadySeeded = examRepository.findAll().stream()
+                .anyMatch(e -> JOURNAL_EXAM_TITLE.equals(e.getTitle()));
+        if (alreadySeeded) return;
+
+        User k1Student1 = getUser("k1.anvar.rasulov@rspcm.local");
+        User k1Student2 = getUser("k1.alisher.nazarov@rspcm.local");
+        User k1Student3 = getUser("k1.axror.karimov@rspcm.local");
+        User k1Student4 = getUser("k1.asror.abdullayev@rspcm.local");
+        User k1Student5 = getUser("k1.abror.rahimov@rspcm.local");
+        User teacherPhysics = getUser("physics.teacher@rspcm.local");
+        Subject physics = subjectRepository.findByName("Физика")
+                .orElseThrow(() -> new IllegalStateException("Физика subject not found"));
+        StudyGroup k1Group = getGroup("K1");
+
+        // ── Practice 1: mixed diary activity ──────────────────────────────────
+        Practice diaryPractice = practiceRepository.save(Practice.builder()
+                .name("Лабораторный дневник по физике")
+                .description("Наблюдение и фиксация результатов лабораторных опытов. " +
+                             "Каждый день записывайте ход работы, результаты измерений и выводы.")
+                .subject(physics)
+                .resourceUrl("https://example.com/physics/lab-diary")
+                .requirements("Ежедневные записи обязательны. Минимум 80 слов в день. " +
+                              "Укажите цель опыта, оборудование, ход работы и вывод.")
+                .workMode(WorkMode.INDIVIDUAL)
+                .teamSize(null)
+                .schedulingRequired(true)
+                .allowedSubmissionTypes(new HashSet<>(Set.of(SubmissionType.TEXT, SubmissionType.FILE)))
+                .createdBy(teacherPhysics)
+                .build());
+
+        // ── Practice 2: student fills diary daily but hasn't submitted yet ──
+        Practice inProgressPractice = practiceRepository.save(Practice.builder()
+                .name("Полевая практика: наблюдение физических явлений")
+                .description("Ежедневное наблюдение физических явлений в окружающей среде. " +
+                             "Фиксируйте наблюдения в дневнике и формулируйте гипотезы.")
+                .subject(physics)
+                .resourceUrl("https://example.com/physics/field-practice")
+                .requirements("Обязательное ведение дневника каждый день. " +
+                              "Опишите наблюдение, примените формулы и объясните явление.")
+                .workMode(WorkMode.INDIVIDUAL)
+                .teamSize(null)
+                .schedulingRequired(true)
+                .allowedSubmissionTypes(new HashSet<>(Set.of(SubmissionType.TEXT)))
+                .createdBy(teacherPhysics)
+                .build());
+
+        // ── Exam ──────────────────────────────────────────────────────────────
+        Exam journalExam = examRepository.save(Exam.builder()
+                .title(JOURNAL_EXAM_TITLE)
+                .description("Практические задания по физике с обязательным ведением дневника наблюдений.")
+                .subject(physics)
+                .type(ExamType.PRACTICE)
+                .status(ExamStatus.PUBLISHED)
+                .maxScore(100)
+                .taskLimit(10)
+                .startAt(LocalDateTime.now().minusDays(8))
+                .endAt(LocalDateTime.now().plusDays(22))
+                .groups(new HashSet<>(Set.of(k1Group)))
+                .createdBy(teacherPhysics)
+                .createdAt(LocalDateTime.now().minusDays(9))
+                .questions(new ArrayList<>())
+                .practices(new ArrayList<>())
+                .targetStudents(new HashSet<>())
+                .build());
+        attachPracticesToExam(journalExam, List.of(diaryPractice, inProgressPractice));
+        // reload to get the ExamPractice links
+        journalExam = examRepository.findById(journalExam.getId()).orElseThrow();
+
+        ExamPractice ep1 = journalExam.getPractices().stream()
+                .filter(ep -> ep.getPractice().getId().equals(diaryPractice.getId()))
+                .findFirst().orElseThrow();
+        ExamPractice ep2 = journalExam.getPractices().stream()
+                .filter(ep -> ep.getPractice().getId().equals(inProgressPractice.getId()))
+                .findFirst().orElseThrow();
+
+        // ── Scenario 1 participations ─────────────────────────────────────────
+
+        // k1Student1: 7 daily entries + GRADED submission
+        PracticeParticipation pp1 = createParticipation(journalExam, ep1,
+                PracticeParticipationStatus.PRACTICE_CHOSEN,
+                LocalDateTime.now().minusDays(8), LocalDateTime.now().minusDays(8), LocalDateTime.now().minusDays(7));
+        addMember(pp1, k1Student1, PracticeMemberRole.LEADER, PracticeParticipationMemberStatus.ACCEPTED);
+        PracticeLogbook lb1 = createLogbook(diaryPractice, k1Student1);
+        addLogbookEntry(lb1, LocalDate.now().minusDays(6), "Провёл опыт с маятником. Измерил период колебания при разных длинах нити: 20 см — 0.9с, 40 см — 1.27с, 60 см — 1.55с. Вывод: период пропорционален корню из длины нити.");
+        addLogbookEntry(lb1, LocalDate.now().minusDays(5), "Изучил закон Архимеда. Погружал тела разной плотности в воду и измерял выталкивающую силу. Результаты совпали с теоретическим расчётом F = ρgV.");
+        addLogbookEntry(lb1, LocalDate.now().minusDays(4), "Эксперимент с наклонной плоскостью. Измерял ускорение шара при разных углах наклона. Подтвердил формулу a = g·sin(α).");
+        addLogbookEntry(lb1, LocalDate.now().minusDays(3), "Исследование упругих деформаций. Строил график зависимости удлинения пружины от нагрузки. Получил линейную зависимость — закон Гука выполняется.");
+        addLogbookEntry(lb1, LocalDate.now().minusDays(2), "Опыт с электрическими цепями. Собрал последовательную и параллельную цепи, измерил токи и напряжения. Проверил законы Кирхгофа.");
+        addLogbookEntry(lb1, LocalDate.now().minusDays(1), "Термодинамика: нагрев воды и измерение теплоёмкости. Рассчитал количество теплоты Q = cmΔT, погрешность 4%.");
+        addLogbookEntry(lb1, LocalDate.now(),             "Финальный обзор недели. Обобщил все опыты, подготовил отчёт. Все гипотезы подтверждены экспериментально.");
+        PracticeSubmission sub1 = practiceSubmissionRepository.save(PracticeSubmission.builder()
+                .examParticipation(pp1).student(k1Student1)
+                .textAnswer("Отчёт о лабораторных работах за неделю. Провёл 7 экспериментов по механике, гидростатике, термодинамике и электричеству. Все результаты зафиксированы в дневнике. Погрешности в пределах нормы.")
+                .fileUrl("https://example.com/submissions/anvar-lab-report.pdf")
+                .submittedAt(LocalDateTime.now().minusDays(1))
+                .status(PracticeSubmissionStatus.GRADED)
+                .teacherComment("Отличная работа! Записи подробные, выводы обоснованы. Оценка: отлично.")
+                .build());
+        practiceSubmissionAttemptRepository.save(PracticeSubmissionAttempt.builder()
+                .submission(sub1).attemptNumber(1)
+                .textAnswer(sub1.getTextAnswer()).fileUrl(sub1.getFileUrl())
+                .submittedAt(sub1.getSubmittedAt()).teacherComment(sub1.getTeacherComment()).build());
+
+        // k1Student2: entries with gaps (пропустил дни 4 и 5 назад) + SUBMITTED
+        PracticeParticipation pp2 = createParticipation(journalExam, ep1,
+                PracticeParticipationStatus.PRACTICE_CHOSEN,
+                LocalDateTime.now().minusDays(8), LocalDateTime.now().minusDays(8), LocalDateTime.now().minusDays(7));
+        addMember(pp2, k1Student2, PracticeMemberRole.LEADER, PracticeParticipationMemberStatus.ACCEPTED);
+        PracticeLogbook lb2 = createLogbook(diaryPractice, k1Student2);
+        addLogbookEntry(lb2, LocalDate.now().minusDays(6), "Первый день. Изучил маятник: T = 2π√(l/g). При l=0.25м получил T≈1с. Совпадает с теорией.");
+        addLogbookEntry(lb2, LocalDate.now().minusDays(5), "Закон Архимеда. Опыт с деревянным и металлическим кубиком. Плавучесть зависит от плотности материала.");
+        addLogbookEntry(lb2, LocalDate.now().minusDays(3), "Пропустил вчера — плохо себя чувствовал. Сегодня наклонная плоскость: a = g·sin(15°) ≈ 2.5 м/с². Эксперимент подтвердил формулу.");
+        // пропустил day -2 и -1
+        addLogbookEntry(lb2, LocalDate.now(),             "Вернулся к работе. Электрические цепи: проверил закон Ома. R = U/I, результаты сходятся с расчётами. Нужно догнать пропущенные дни.");
+        PracticeSubmission sub2 = practiceSubmissionRepository.save(PracticeSubmission.builder()
+                .examParticipation(pp2).student(k1Student2)
+                .textAnswer("Выполнил часть лабораторных работ. Пропустил несколько дней по болезни, но основные опыты провёл. Прошу принять работу.")
+                .fileUrl("")
+                .submittedAt(LocalDateTime.now().minusHours(3))
+                .status(PracticeSubmissionStatus.SUBMITTED)
+                .teacherComment(null)
+                .build());
+        practiceSubmissionAttemptRepository.save(PracticeSubmissionAttempt.builder()
+                .submission(sub2).attemptNumber(1)
+                .textAnswer(sub2.getTextAnswer()).fileUrl("").submittedAt(sub2.getSubmittedAt()).build());
+
+        // k1Student3: только 3 записи (первые 3 дня) + RETURNED
+        PracticeParticipation pp3 = createParticipation(journalExam, ep1,
+                PracticeParticipationStatus.PRACTICE_CHOSEN,
+                LocalDateTime.now().minusDays(8), LocalDateTime.now().minusDays(8), LocalDateTime.now().minusDays(7));
+        addMember(pp3, k1Student3, PracticeMemberRole.LEADER, PracticeParticipationMemberStatus.ACCEPTED);
+        PracticeLogbook lb3 = createLogbook(diaryPractice, k1Student3);
+        addLogbookEntry(lb3, LocalDate.now().minusDays(6), "День 1. Маятник. Провёл 3 измерения при разных длинах нити.");
+        addLogbookEntry(lb3, LocalDate.now().minusDays(5), "День 2. Закон Архимеда. Интересный опыт, буду продолжать.");
+        addLogbookEntry(lb3, LocalDate.now().minusDays(4), "День 3. Наклонная плоскость. Не успел завершить — отвлёкся.");
+        // дни 3,2,1,0 — не заполнены
+        PracticeSubmission sub3 = practiceSubmissionRepository.save(PracticeSubmission.builder()
+                .examParticipation(pp3).student(k1Student3)
+                .textAnswer("Провёл первые три опыта. Остальные не успел из-за других дедлайнов.")
+                .fileUrl("")
+                .submittedAt(LocalDateTime.now().minusDays(3))
+                .status(PracticeSubmissionStatus.RETURNED)
+                .teacherComment("Дневник заполнен только 3 из 7 дней. Дополните наблюдения за оставшиеся дни и пересдайте.")
+                .build());
+        practiceSubmissionAttemptRepository.save(PracticeSubmissionAttempt.builder()
+                .submission(sub3).attemptNumber(1)
+                .textAnswer(sub3.getTextAnswer()).fileUrl("").submittedAt(sub3.getSubmittedAt())
+                .teacherComment(sub3.getTeacherComment()).build());
+
+        // k1Student4: участвует, но дневник не ведёт, работу не сдал
+        PracticeParticipation pp4 = createParticipation(journalExam, ep1,
+                PracticeParticipationStatus.PRACTICE_CHOSEN,
+                LocalDateTime.now().minusDays(7), LocalDateTime.now().minusDays(7), LocalDateTime.now().minusDays(6));
+        addMember(pp4, k1Student4, PracticeMemberRole.LEADER, PracticeParticipationMemberStatus.ACCEPTED);
+        // нет дневника, нет сдачи
+
+        // ── Scenario 2: ежедневный дневник без сдачи ─────────────────────────
+
+        PracticeParticipation pp5 = createParticipation(journalExam, ep2,
+                PracticeParticipationStatus.PRACTICE_CHOSEN,
+                LocalDateTime.now().minusDays(7), LocalDateTime.now().minusDays(7), LocalDateTime.now().minusDays(6));
+        addMember(pp5, k1Student5, PracticeMemberRole.LEADER, PracticeParticipationMemberStatus.ACCEPTED);
+        PracticeLogbook lb5 = createLogbook(inProgressPractice, k1Student5);
+        addLogbookEntry(lb5, LocalDate.now().minusDays(6), "День 1. Наблюдал падение листьев с дерева. Засек время падения с высоты ~3м: ~0.78с. По формуле h=½gt² получил g≈9.9 м/с². Близко к стандартному!");
+        addLogbookEntry(lb5, LocalDate.now().minusDays(5), "День 2. Изучал отражение света в луже. Угол падения = угол отражения. Проверил с транспортиром — подтвердилось.");
+        addLogbookEntry(lb5, LocalDate.now().minusDays(4), "День 3. Наблюдал за паром из чайника. Конденсация пара — переход из газообразного состояния в жидкое. Температура конденсации зависит от давления.");
+        addLogbookEntry(lb5, LocalDate.now().minusDays(3), "День 4. Звук. Записал время эха от стены на расстоянии 25м: 0.15с. Скорость звука ≈ 333 м/с. Погрешность 3% — приемлемо.");
+        addLogbookEntry(lb5, LocalDate.now().minusDays(2), "День 5. Поверхностное натяжение воды. Скрепка держится на поверхности. Объяснил это силами межмолекулярного взаимодействия.");
+        addLogbookEntry(lb5, LocalDate.now().minusDays(1), "День 6. Радуга после дождя. Разложение белого света на спектр. Угол радуги ~42°. Красный снаружи, фиолетовый внутри.");
+        addLogbookEntry(lb5, LocalDate.now(),              "День 7. Обобщение. За неделю наблюдал 7 физических явлений в быту. Готовлю итоговый отчёт — сдам завтра.");
+        // нет PracticeSubmission — студент ещё работает
+    }
+
+    private PracticeLogbook createLogbook(Practice practice, User student) {
+        return practiceJournalRepository.save(PracticeLogbook.builder()
+                .practice(practice)
+                .student(student)
+                .status(LogbookStatus.DRAFT)
+                .submittedAt(null)
+                .build());
+    }
+
+    private void addLogbookEntry(PracticeLogbook logbook, LocalDate date, String content) {
+        practiceLogbookEntryRepository.save(PracticeLogbookEntry.builder()
+                .logbook(logbook)
+                .entryDate(date)
+                .content(content)
+                .status(LogbookEntryStatus.SUBMITTED)
+                .submittedAt(date.atTime(20, 0))
+                .build());
     }
 
     private PracticeParticipation createParticipation(
